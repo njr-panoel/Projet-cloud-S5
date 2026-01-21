@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database Service
+  postgres:
+    image: postgres:16-alpine
+    container_name: road-issues-postgres
+    environment:
+      POSTGRES_DB: road_issues_db
+      POSTGRES_USER: road_issues_user
+      POSTGRES_PASSWORD: securePassword123!
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - road-issues-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U road_issues_user -d road_issues_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Spring Boot Application Service
+  road-issues-api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: road-issues-api
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/road_issues_db
+      SPRING_DATASOURCE_USERNAME: road_issues_user
+      SPRING_DATASOURCE_PASSWORD: securePassword123!
+      JWT_SECRET: your-secret-key-change-this-in-production-at-least-32-characters-long
+      JWT_EXPIRATION_HOURS: 1
+      AUTH_MAX_LOGIN_ATTEMPTS: 3
+      AUTH_BLOCK_DURATION_MINUTES: 30
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      SPRING_FLYWAY_ENABLED: "true"
+      LOGGING_LEVEL_ROOT: INFO
+      LOGGING_LEVEL_COM_ROADISSUES_API: DEBUG
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - road-issues-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/api/stats" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  road-issues-network:
+    driver: bridge
