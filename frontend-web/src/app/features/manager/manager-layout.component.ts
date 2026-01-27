@@ -15,6 +15,7 @@ import { AuthService } from '../../core/services/auth.service';
       <span>Manager</span>
       <span style="flex: 1 1 auto"></span>
       <a mat-button routerLink="/manager">Dashboard</a>
+      <a mat-button routerLink="/manager/profil">Profil</a>
       <a mat-button routerLink="/manager/signalements">Signalements</a>
       <a mat-button routerLink="/manager/utilisateurs">Utilisateurs</a>
       <a mat-button routerLink="/">Public</a>

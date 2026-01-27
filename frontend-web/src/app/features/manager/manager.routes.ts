@@ -11,6 +11,10 @@ export const MANAGER_ROUTES: Routes = [
         loadComponent: () => import('./pages/manager-dashboard.page').then((m) => m.ManagerDashboardPage)
       },
       {
+        path: 'profil',
+        loadComponent: () => import('./pages/manager-profile.page').then((m) => m.ManagerProfilePage)
+      },
+      {
         path: 'signalements',
         loadComponent: () =>
           import('./pages/manager-signalements.page').then((m) => m.ManagerSignalementsPage)

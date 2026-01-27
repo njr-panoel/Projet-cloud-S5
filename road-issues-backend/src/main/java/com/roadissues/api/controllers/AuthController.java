@@ -73,6 +73,17 @@ public class AuthController {
         UserProfileDto profile = authService.updateProfile(userId, request);
         return ResponseEntity.ok(profile);
     }
+
+    @PatchMapping("/password")
+    @Operation(summary = "Change password", description = "Change current user password")
+    public ResponseEntity<Void> changePassword(
+            Authentication authentication,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        log.info("PATCH /api/auth/password - User: {}", authentication.getName());
+        Long userId = jwtTokenProvider.getUserIdFromToken(extractToken(authentication));
+        authService.changePassword(userId, request);
+        return ResponseEntity.noContent().build();
+    }
     
     /**
      * Extract JWT token from authentication

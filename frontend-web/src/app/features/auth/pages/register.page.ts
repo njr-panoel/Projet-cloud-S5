@@ -6,6 +6,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -18,7 +19,8 @@ import { AuthService } from '../../../core/services/auth.service';
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
-    MatButtonModule
+    MatButtonModule,
+    MatProgressSpinnerModule
   ],
   template: `
     <h1>Créer un compte</h1>
@@ -29,20 +31,46 @@ import { AuthService } from '../../../core/services/auth.service';
           <mat-form-field appearance="outline" style="width: 100%">
             <mat-label>Nom</mat-label>
             <input matInput formControlName="nom" autocomplete="name" />
+            @if (form.controls.nom.touched && form.controls.nom.invalid) {
+              <mat-error>
+                @if (form.controls.nom.errors?.['required']) { Nom requis. }
+                @if (form.controls.nom.errors?.['minlength']) { Nom trop court (min 2). }
+              </mat-error>
+            }
           </mat-form-field>
 
           <mat-form-field appearance="outline" style="width: 100%">
             <mat-label>Email</mat-label>
             <input matInput type="email" formControlName="email" autocomplete="email" />
+            @if (form.controls.email.touched && form.controls.email.invalid) {
+              <mat-error>
+                @if (form.controls.email.errors?.['required']) { Email requis. }
+                @if (form.controls.email.errors?.['email']) { Email invalide. }
+              </mat-error>
+            }
           </mat-form-field>
 
           <mat-form-field appearance="outline" style="width: 100%">
             <mat-label>Mot de passe</mat-label>
             <input matInput type="password" formControlName="password" autocomplete="new-password" />
+            @if (form.controls.password.touched && form.controls.password.invalid) {
+              <mat-error>
+                @if (form.controls.password.errors?.['required']) { Mot de passe requis. }
+                @if (form.controls.password.errors?.['minlength']) { Minimum 8 caractères. }
+              </mat-error>
+            }
           </mat-form-field>
 
-          <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">
-            S'inscrire
+          @if (errorMessage) {
+            <div style="color: #b00020; margin-bottom: 12px;">{{ errorMessage }}</div>
+          }
+
+          <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || loading">
+            @if (loading) {
+              <mat-progress-spinner diameter="18" mode="indeterminate" />
+            } @else {
+              S'inscrire
+            }
           </button>
 
           <a mat-button routerLink="/auth/login" type="button">Déjà un compte ?</a>
@@ -62,10 +90,16 @@ export class RegisterPage {
     password: ['', [Validators.required, Validators.minLength(8)]]
   });
 
+  protected loading = false;
+  protected errorMessage: string | null = null;
+
   submit() {
     if (this.form.invalid) {
       return;
     }
+
+    this.errorMessage = null;
+    this.loading = true;
 
     const nom = this.form.value.nom ?? '';
     const email = this.form.value.email ?? '';
@@ -73,10 +107,12 @@ export class RegisterPage {
 
     this.auth.register({ nom, email, password }).subscribe({
       next: () => {
+        this.loading = false;
         this.router.navigateByUrl('/');
       },
       error: () => {
-        // à compléter avec un message UI
+        this.loading = false;
+        this.errorMessage = "Impossible de créer le compte. Vérifiez les informations.";
       }
     });
   }

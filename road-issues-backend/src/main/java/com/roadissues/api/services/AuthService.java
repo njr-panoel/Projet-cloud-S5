@@ -141,7 +141,7 @@ public class AuthService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         
         // If updating email, check if it's available
-        if (!request.getEmail().isEmpty() && !user.getEmail().equals(request.getEmail())) {
+        if (request.getEmail() != null && !request.getEmail().isEmpty() && !user.getEmail().equals(request.getEmail())) {
             if (userRepository.existsByEmail(request.getEmail())) {
                 throw new ValidationException("Email already exists");
             }
@@ -154,6 +154,23 @@ public class AuthService {
         
         log.info("User profile updated: {}", userId);
         return buildUserProfileDto(updatedUser);
+    }
+
+    @Transactional
+    public void changePassword(Long userId, ChangePasswordRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPasswordHash())) {
+            throw new AuthenticationException("Invalid email or password");
+        }
+
+        validatePassword(request.getNewPassword());
+
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        log.info("User password changed: {}", userId);
     }
     
     /**
