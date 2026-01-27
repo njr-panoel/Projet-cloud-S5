@@ -1,11 +1,21 @@
 import React from 'react';
-import { MapPin, Calendar, Tag } from 'lucide-react';
+import { MapPin, Calendar, Tag, Ruler, Banknote, Building2 } from 'lucide-react';
 import { Badge, getStatutBadgeVariant, getStatutLabel, getTypeBadgeVariant, getTypeLabel } from '../ui';
 import type { Signalement } from '../../types';
 
 interface MapTooltipProps {
   signalement: Signalement;
 }
+
+// Formater le budget en Ariary
+const formatBudget = (budget: number): string => {
+  if (budget >= 1000000) {
+    return `${(budget / 1000000).toFixed(1)} M Ar`;
+  } else if (budget >= 1000) {
+    return `${(budget / 1000).toFixed(0)} K Ar`;
+  }
+  return `${budget.toLocaleString()} Ar`;
+};
 
 export const MapTooltip: React.FC<MapTooltipProps> = ({ signalement }) => {
   const formatDate = (dateString: string) => {
@@ -17,7 +27,7 @@ export const MapTooltip: React.FC<MapTooltipProps> = ({ signalement }) => {
   };
 
   return (
-    <div className="min-w-[250px] p-2">
+    <div className="min-w-[280px] p-2">
       <div className="flex items-start justify-between gap-2 mb-2">
         <h3 className="font-semibold text-secondary-800 text-base leading-tight">
           {signalement.titre}
@@ -50,6 +60,30 @@ export const MapTooltip: React.FC<MapTooltipProps> = ({ signalement }) => {
             {getTypeLabel(signalement.typeTravaux)}
           </Badge>
         </div>
+
+        {/* Surface en m² */}
+        {signalement.surfaceM2 && (
+          <div className="flex items-center gap-1.5">
+            <Ruler className="w-3.5 h-3.5" />
+            <span>{signalement.surfaceM2.toLocaleString()} m²</span>
+          </div>
+        )}
+
+        {/* Budget */}
+        {signalement.budget && (
+          <div className="flex items-center gap-1.5">
+            <Banknote className="w-3.5 h-3.5" />
+            <span>{formatBudget(signalement.budget)}</span>
+          </div>
+        )}
+
+        {/* Entreprise */}
+        {signalement.entreprise && (
+          <div className="flex items-center gap-1.5">
+            <Building2 className="w-3.5 h-3.5" />
+            <span>{signalement.entreprise}</span>
+          </div>
+        )}
       </div>
 
       {signalement.photos && (

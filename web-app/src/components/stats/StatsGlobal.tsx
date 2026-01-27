@@ -1,7 +1,29 @@
 import React from 'react';
-import { TrendingUp, Clock, CheckCircle, MapPin, AlertTriangle, XCircle, Percent } from 'lucide-react';
+import { TrendingUp, Clock, CheckCircle, MapPin, AlertTriangle, Ruler, Banknote } from 'lucide-react';
 import { Card } from '../ui';
 import type { GlobalStats } from '../../types';
+
+// Fonction pour formater le budget en ariary
+const formatBudget = (budget: number): string => {
+  if (budget >= 1_000_000_000) {
+    return `${(budget / 1_000_000_000).toFixed(1)} Mrd Ar`;
+  } else if (budget >= 1_000_000) {
+    return `${(budget / 1_000_000).toFixed(1)} M Ar`;
+  } else if (budget >= 1_000) {
+    return `${(budget / 1_000).toFixed(0)} K Ar`;
+  }
+  return `${budget} Ar`;
+};
+
+// Fonction pour formater la surface
+const formatSurface = (surface: number): string => {
+  if (surface >= 1_000_000) {
+    return `${(surface / 1_000_000).toFixed(1)} km²`;
+  } else if (surface >= 10_000) {
+    return `${(surface / 10_000).toFixed(1)} ha`;
+  }
+  return `${surface.toLocaleString('fr-FR')} m²`;
+};
 
 interface StatsGlobalProps {
   stats: GlobalStats | null;
@@ -85,15 +107,15 @@ export const StatsGlobal: React.FC<StatsGlobalProps> = ({ stats, isLoading }) =>
       color: 'bg-success-500',
     },
     {
-      title: 'Annulés',
-      value: stats.annules,
-      icon: <XCircle className="w-6 h-6 text-white" />,
-      color: 'bg-danger-500',
+      title: 'Surface Totale',
+      value: formatSurface(stats.totalSurface),
+      icon: <Ruler className="w-6 h-6 text-white" />,
+      color: 'bg-secondary-600',
     },
     {
-      title: 'Taux Achèvement',
-      value: `${stats.pourcentageTermine}%`,
-      icon: <Percent className="w-6 h-6 text-white" />,
+      title: 'Budget Total',
+      value: formatBudget(stats.totalBudget),
+      icon: <Banknote className="w-6 h-6 text-white" />,
       color: 'bg-success-600',
     },
   ];

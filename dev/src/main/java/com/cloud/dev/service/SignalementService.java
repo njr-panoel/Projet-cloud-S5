@@ -98,6 +98,9 @@ public class SignalementService {
         if (request.getLongitude() != null) signalement.setLongitude(request.getLongitude());
         if (request.getAdresse() != null) signalement.setAdresse(request.getAdresse());
         if (request.getPhotos() != null) signalement.setPhotos(request.getPhotos());
+        if (request.getSurfaceM2() != null) signalement.setSurfaceM2(request.getSurfaceM2());
+        if (request.getBudget() != null) signalement.setBudget(request.getBudget());
+        if (request.getEntreprise() != null) signalement.setEntreprise(request.getEntreprise());
         
         signalement = signalementRepository.save(signalement);
         log.info("Signalement mis à jour: {}", signalement.getId());
@@ -158,6 +161,9 @@ public class SignalementService {
                 .longitude(signalement.getLongitude())
                 .adresse(signalement.getAdresse())
                 .photos(signalement.getPhotos())
+                .surfaceM2(signalement.getSurfaceM2())
+                .budget(signalement.getBudget())
+                .entreprise(signalement.getEntreprise())
                 .user(userResponse)
                 .synced(signalement.getSynced())
                 .firebaseId(signalement.getFirebaseId())

@@ -46,6 +46,9 @@ export interface Signalement {
   longitude: number;
   adresse?: string;
   photos?: string; // URLs séparées par virgules
+  surfaceM2?: number; // Surface en m²
+  budget?: number;   // Budget en Ariary
+  entreprise?: string; // Entreprise concernée
   user: User;
   synced: boolean;
   firebaseId?: string;
@@ -63,6 +66,9 @@ export interface SignalementFormData {
   longitude: number;
   adresse?: string;
   photos?: string;
+  surfaceM2?: number;
+  budget?: number;
+  entreprise?: string;
   firebaseId?: string;
 }
 
@@ -74,6 +80,8 @@ export interface GlobalStats {
   termines: number;
   annules: number;
   pourcentageTermine: number;
+  totalSurface: number;  // Total surface en m²
+  totalBudget: number;   // Total budget en Ariary
 }
 
 // API types - correspond à ApiResponse du backend

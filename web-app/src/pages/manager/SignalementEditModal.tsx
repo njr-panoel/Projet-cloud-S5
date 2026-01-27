@@ -15,6 +15,9 @@ const editSchema = z.object({
   adresse: z.string().optional(),
   latitude: z.coerce.number(),
   longitude: z.coerce.number(),
+  surfaceM2: z.coerce.number().min(0, 'Surface doit être positive').optional(),
+  budget: z.coerce.number().min(0, 'Budget doit être positif').optional(),
+  entreprise: z.string().optional(),
 });
 
 type EditFormData = z.infer<typeof editSchema>;
@@ -46,6 +49,9 @@ export const SignalementEditModal: React.FC<SignalementEditModalProps> = ({
       adresse: signalement.adresse || '',
       latitude: signalement.latitude,
       longitude: signalement.longitude,
+      surfaceM2: signalement.surfaceM2 || undefined,
+      budget: signalement.budget || undefined,
+      entreprise: signalement.entreprise || '',
     },
   });
 
@@ -67,6 +73,9 @@ export const SignalementEditModal: React.FC<SignalementEditModalProps> = ({
         adresse: formData.adresse,
         latitude: formData.latitude,
         longitude: formData.longitude,
+        surfaceM2: formData.surfaceM2,
+        budget: formData.budget,
+        entreprise: formData.entreprise,
       };
       
       await updateSignalement(signalement.id, updateData);
@@ -150,6 +159,37 @@ export const SignalementEditModal: React.FC<SignalementEditModalProps> = ({
             step="0.000001"
             label="Longitude"
           />
+        </div>
+
+        {/* Champs supplémentaires pour le manager */}
+        <div className="border-t border-secondary-200 pt-4 mt-4">
+          <h4 className="text-sm font-semibold text-secondary-700 mb-3">Informations complémentaires</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              {...register('surfaceM2')}
+              type="number"
+              step="0.01"
+              label="Surface (m²)"
+              placeholder="Ex: 150.5"
+              error={errors.surfaceM2?.message}
+            />
+            <Input
+              {...register('budget')}
+              type="number"
+              step="1000"
+              label="Budget (Ariary)"
+              placeholder="Ex: 5000000"
+              error={errors.budget?.message}
+            />
+          </div>
+          <div className="mt-4">
+            <Input
+              {...register('entreprise')}
+              label="Entreprise en charge"
+              placeholder="Nom de l'entreprise"
+              error={errors.entreprise?.message}
+            />
+          </div>
         </div>
 
         <ModalFooter>

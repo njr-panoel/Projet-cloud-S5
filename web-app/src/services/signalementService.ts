@@ -88,6 +88,10 @@ export const signalementService = {
     const termines = signalements.filter(s => s.statut === 'TERMINE').length;
     const annules = signalements.filter(s => s.statut === 'ANNULE').length;
     
+    // Calculer les totaux surface et budget
+    const totalSurface = signalements.reduce((sum, s) => sum + (s.surfaceM2 || 0), 0);
+    const totalBudget = signalements.reduce((sum, s) => sum + (s.budget || 0), 0);
+    
     return {
       totalSignalements: total,
       nouveau,
@@ -95,6 +99,8 @@ export const signalementService = {
       termines,
       annules,
       pourcentageTermine: total > 0 ? Math.round((termines / total) * 100) : 0,
+      totalSurface,
+      totalBudget,
     };
   },
 
