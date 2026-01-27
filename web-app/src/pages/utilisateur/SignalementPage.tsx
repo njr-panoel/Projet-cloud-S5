@@ -1,19 +1,19 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { MapPin, Upload, X, Send } from 'lucide-react';
+import { MapPin, Send } from 'lucide-react';
 import { Card, Button, Input, Select } from '../../components/ui';
 import { MapComponent } from '../../components/map';
 import { Toast } from '../../components/ui/Toast';
 import { useSignalementStore } from '../../stores/signalementStore';
+import type { SignalementFormData as FormDataType } from '../../types';
 
 
 const signalementSchema = z.object({
   titre: z.string().min(5, 'Titre minimum 5 caractères').max(100),
-  description: z.string().min(20, 'Description minimum 20 caractères').max(1000),
-  typeTravaux: z.enum(['ROUTE', 'TROTTOIR', 'ECLAIRAGE', 'ASSAINISSEMENT', 'AUTRE']),
-  priorite: z.enum(['BASSE', 'MOYENNE', 'HAUTE', 'URGENTE']).optional(),
+  description: z.string().optional(),
+  typeTravaux: z.enum(['NIDS_DE_POULE', 'FISSURE', 'AFFAISSEMENT', 'INONDATION', 'SIGNALISATION', 'ECLAIRAGE', 'AUTRE']),
   adresse: z.string().optional(),
 });
 
@@ -21,9 +21,6 @@ type SignalementFormData = z.infer<typeof signalementSchema>;
 
 export const SignalementPage: React.FC = () => {
   const [selectedPosition, setSelectedPosition] = useState<{ lat: number; lng: number } | null>(null);
-  const [photos, setPhotos] = useState<File[]>([]);
-  const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const { createSignalement, isLoading } = useSignalementStore();
 
   const {
@@ -34,37 +31,12 @@ export const SignalementPage: React.FC = () => {
   } = useForm<SignalementFormData>({
     resolver: zodResolver(signalementSchema),
     defaultValues: {
-      priorite: 'MOYENNE',
+      typeTravaux: 'AUTRE',
     },
   });
 
   const handleMapClick = (lat: number, lng: number) => {
     setSelectedPosition({ lat, lng });
-  };
-
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length + photos.length > 5) {
-      Toast.warning('Maximum 5 photos autorisées');
-      return;
-    }
-
-    const newPhotos = [...photos, ...files];
-    setPhotos(newPhotos);
-
-    // Create previews
-    files.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setPhotoPreviews((prev) => [...prev, e.target?.result as string]);
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const removePhoto = (index: number) => {
-    setPhotos((prev) => prev.filter((_, i) => i !== index));
-    setPhotoPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const onSubmit = async (data: SignalementFormData) => {
@@ -74,35 +46,32 @@ export const SignalementPage: React.FC = () => {
     }
 
     try {
-      await createSignalement({
-        ...data,
+      const formData: FormDataType = {
+        titre: data.titre,
+        description: data.description,
+        typeTravaux: data.typeTravaux,
+        adresse: data.adresse,
         latitude: selectedPosition.lat,
         longitude: selectedPosition.lng,
-        photos: photos.length > 0 ? photos : undefined,
-      });
+      };
+      
+      await createSignalement(formData);
       Toast.success('Signalement créé avec succès !');
       reset();
       setSelectedPosition(null);
-      setPhotos([]);
-      setPhotoPreviews([]);
     } catch (error) {
       Toast.error('Erreur lors de la création du signalement');
     }
   };
 
   const typeOptions = [
-    { value: 'ROUTE', label: 'Route' },
-    { value: 'TROTTOIR', label: 'Trottoir' },
+    { value: 'NIDS_DE_POULE', label: 'Nids de poule' },
+    { value: 'FISSURE', label: 'Fissure' },
+    { value: 'AFFAISSEMENT', label: 'Affaissement' },
+    { value: 'INONDATION', label: 'Inondation' },
+    { value: 'SIGNALISATION', label: 'Signalisation' },
     { value: 'ECLAIRAGE', label: 'Éclairage' },
-    { value: 'ASSAINISSEMENT', label: 'Assainissement' },
     { value: 'AUTRE', label: 'Autre' },
-  ];
-
-  const prioriteOptions = [
-    { value: 'BASSE', label: 'Basse' },
-    { value: 'MOYENNE', label: 'Moyenne' },
-    { value: 'HAUTE', label: 'Haute' },
-    { value: 'URGENTE', label: 'Urgente' },
   ];
 
   return (
@@ -175,65 +144,11 @@ export const SignalementPage: React.FC = () => {
                   error={errors.typeTravaux?.message}
                 />
 
-                <Select
-                  {...register('priorite')}
-                  label="Priorité"
-                  options={prioriteOptions}
-                />
-
                 <Input
                   {...register('adresse')}
                   label="Adresse (optionnel)"
                   placeholder="Ex: Rue de l'Indépendance"
                 />
-
-                {/* Photo Upload */}
-                <div>
-                  <label className="block text-sm font-medium text-secondary-700 mb-1.5">
-                    Photos (max 5)
-                  </label>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handlePhotoChange}
-                    className="hidden"
-                  />
-                  
-                  {photoPreviews.length > 0 && (
-                    <div className="grid grid-cols-3 gap-2 mb-2">
-                      {photoPreviews.map((preview, index) => (
-                        <div key={index} className="relative group">
-                          <img
-                            src={preview}
-                            alt={`Preview ${index + 1}`}
-                            className="w-full h-20 object-cover rounded-lg"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removePhoto(index)}
-                            className="absolute top-1 right-1 p-1 bg-danger-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {photos.length < 5 && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      fullWidth
-                      onClick={() => fileInputRef.current?.click()}
-                      leftIcon={<Upload className="w-4 h-4" />}
-                    >
-                      Ajouter des photos
-                    </Button>
-                  )}
-                </div>
 
                 <Button
                   type="submit"

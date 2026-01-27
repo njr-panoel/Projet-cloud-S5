@@ -7,13 +7,12 @@ import { useSignalementStore } from '../../stores/signalementStore';
 import type { Signalement } from '../../types';
 
 export const VisiteurPage: React.FC = () => {
-  const { signalements, stats, fetchSignalements, fetchStats, isLoading, setFilters, filters } = useSignalementStore();
+  const { filteredSignalements, stats, fetchSignalements, isLoading, setFilters, filters } = useSignalementStore();
   const [showSidebar, setShowSidebar] = useState(true);
   const [selectedSignalement, setSelectedSignalement] = useState<Signalement | null>(null);
 
   useEffect(() => {
     fetchSignalements();
-    fetchStats();
   }, []);
 
   const handleFilterChange = (key: string, value: string) => {
@@ -22,18 +21,20 @@ export const VisiteurPage: React.FC = () => {
 
   const statutOptions = [
     { value: '', label: 'Tous les statuts' },
-    { value: 'SIGNALE', label: 'Signalé' },
+    { value: 'NOUVEAU', label: 'Nouveau' },
     { value: 'EN_COURS', label: 'En cours' },
     { value: 'TERMINE', label: 'Terminé' },
-    { value: 'REJETE', label: 'Rejeté' },
+    { value: 'ANNULE', label: 'Annulé' },
   ];
 
   const typeOptions = [
     { value: '', label: 'Tous les types' },
-    { value: 'ROUTE', label: 'Route' },
-    { value: 'TROTTOIR', label: 'Trottoir' },
+    { value: 'NIDS_DE_POULE', label: 'Nids de poule' },
+    { value: 'FISSURE', label: 'Fissure' },
+    { value: 'AFFAISSEMENT', label: 'Affaissement' },
+    { value: 'INONDATION', label: 'Inondation' },
+    { value: 'SIGNALISATION', label: 'Signalisation' },
     { value: 'ECLAIRAGE', label: 'Éclairage' },
-    { value: 'ASSAINISSEMENT', label: 'Assainissement' },
     { value: 'AUTRE', label: 'Autre' },
   ];
 
@@ -69,7 +70,7 @@ export const VisiteurPage: React.FC = () => {
           <div className={`flex-1 transition-all duration-300 ${showSidebar ? 'lg:mr-80' : ''}`}>
             <Card padding="none" className="overflow-hidden">
               <MapComponent
-                signalements={signalements}
+                signalements={filteredSignalements}
                 onMarkerClick={setSelectedSignalement}
                 height="calc(100vh - 300px)"
               />
@@ -120,14 +121,10 @@ export const VisiteurPage: React.FC = () => {
                       📍 {selectedSignalement.adresse}
                     </p>
                   )}
-                  {selectedSignalement.entreprise && (
-                    <p className="text-xs text-secondary-500 mt-1">
-                      🏢 {selectedSignalement.entreprise}
-                    </p>
-                  )}
-                  {selectedSignalement.photos && selectedSignalement.photos.length > 0 && (
+    
+                  {selectedSignalement.photos && (
                     <img
-                      src={selectedSignalement.photos[0]}
+                      src={selectedSignalement.photos.split(',')[0]}
                       alt={selectedSignalement.titre}
                       className="w-full h-32 object-cover rounded-lg mt-3"
                     />
@@ -141,7 +138,7 @@ export const VisiteurPage: React.FC = () => {
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center gap-2">
                     <span className="w-3 h-3 rounded-full bg-warning-500" />
-                    <span>Signalé</span>
+                    <span>Nouveau</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="w-3 h-3 rounded-full bg-primary-500" />
@@ -153,7 +150,7 @@ export const VisiteurPage: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="w-3 h-3 rounded-full bg-danger-500" />
-                    <span>Rejeté</span>
+                    <span>Annulé</span>
                   </div>
                 </div>
               </Card>

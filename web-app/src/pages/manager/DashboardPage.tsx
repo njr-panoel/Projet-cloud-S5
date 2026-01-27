@@ -8,7 +8,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { Card, Button, Input, Select, Table, Badge, Modal, ModalFooter } from '../../components/ui';
-import { getStatutBadgeVariant, getStatutLabel, getPrioriteBadgeVariant, getPrioriteLabel } from '../../components/ui/Badge';
+import { getStatutBadgeVariant, getStatutLabel, getTypeBadgeVariant, getTypeLabel } from '../../components/ui/Badge';
 import { Toast } from '../../components/ui/Toast';
 import { useSignalementStore } from '../../stores/signalementStore';
 import { SignalementEditModal } from './SignalementEditModal';
@@ -16,12 +16,12 @@ import type { Signalement, SignalementFilters, SignalementStatut, TypeTravaux } 
 
 export const DashboardPage: React.FC = () => {
   const { 
-    signalements, 
-    pagination, 
+    filteredSignalements, 
     fetchSignalements, 
     isLoading, 
     filters,
     setFilters,
+    clearFilters,
     deleteSignalement 
   } = useSignalementStore();
 
@@ -36,9 +36,6 @@ export const DashboardPage: React.FC = () => {
   const [localFilters, setLocalFilters] = useState<SignalementFilters>({
     statut: '',
     typeTravaux: '',
-    entreprise: '',
-    dateDebut: '',
-    dateFin: '',
   });
 
   useEffect(() => {
@@ -50,19 +47,20 @@ export const DashboardPage: React.FC = () => {
   };
 
   const handleApplyFilters = () => {
-    setFilters(localFilters);
+    setFilters({ ...localFilters, search: searchTerm });
     setShowFilters(false);
   };
 
   const handleResetFilters = () => {
-    setLocalFilters({});
-    setFilters({});
+    setLocalFilters({ statut: '', typeTravaux: '' });
+    setSearchTerm('');
+    clearFilters();
   };
 
   const handleSync = async () => {
     setIsSyncing(true);
     try {
-      await fetchSignalements(0);
+      await fetchSignalements();
       Toast.success('Synchronisation réussie !');
     } catch (error) {
       Toast.error('Erreur lors de la synchronisation');
@@ -118,24 +116,19 @@ export const DashboardPage: React.FC = () => {
       ),
     },
     {
-      key: 'priorite',
-      header: 'Priorité',
+      key: 'typeTravaux',
+      header: 'Type',
       sortable: true,
       render: (item: Signalement) => (
-        <Badge variant={getPrioriteBadgeVariant(item.priorite)}>
-          {getPrioriteLabel(item.priorite)}
+        <Badge variant={getTypeBadgeVariant(item.typeTravaux)}>
+          {getTypeLabel(item.typeTravaux)}
         </Badge>
       ),
     },
     {
-      key: 'typeTravaux',
-      header: 'Type',
-      sortable: true,
-    },
-    {
-      key: 'entreprise',
-      header: 'Entreprise',
-      render: (item: Signalement) => item.entreprise || '-',
+      key: 'user',
+      header: 'Signalé par',
+      render: (item: Signalement) => item.user ? `${item.user.prenom} ${item.user.nom}` : '-',
     },
     {
       key: 'createdAt',
@@ -169,18 +162,20 @@ export const DashboardPage: React.FC = () => {
 
   const statutOptions = [
     { value: '', label: 'Tous' },
-    { value: 'SIGNALE', label: 'Signalé' },
+    { value: 'NOUVEAU', label: 'Nouveau' },
     { value: 'EN_COURS', label: 'En cours' },
     { value: 'TERMINE', label: 'Terminé' },
-    { value: 'REJETE', label: 'Rejeté' },
+    { value: 'ANNULE', label: 'Annulé' },
   ];
 
   const typeOptions = [
     { value: '', label: 'Tous' },
-    { value: 'ROUTE', label: 'Route' },
-    { value: 'TROTTOIR', label: 'Trottoir' },
+    { value: 'NIDS_DE_POULE', label: 'Nids de poule' },
+    { value: 'FISSURE', label: 'Fissure' },
+    { value: 'AFFAISSEMENT', label: 'Affaissement' },
+    { value: 'INONDATION', label: 'Inondation' },
+    { value: 'SIGNALISATION', label: 'Signalisation' },
     { value: 'ECLAIRAGE', label: 'Éclairage' },
-    { value: 'ASSAINISSEMENT', label: 'Assainissement' },
     { value: 'AUTRE', label: 'Autre' },
   ];
 
@@ -234,7 +229,7 @@ export const DashboardPage: React.FC = () => {
           {/* Filters Panel */}
           {showFilters && (
             <div className="bg-secondary-50 rounded-lg p-4 mb-6 animate-slide-up">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Select
                   label="Statut"
                   options={statutOptions}
@@ -246,24 +241,6 @@ export const DashboardPage: React.FC = () => {
                   options={typeOptions}
                   value={localFilters.typeTravaux || ''}
                   onChange={(e) => setLocalFilters({ ...localFilters, typeTravaux: e.target.value as TypeTravaux })}
-                />
-                <Input
-                  label="Entreprise"
-                  placeholder="Nom entreprise..."
-                  value={localFilters.entreprise || ''}
-                  onChange={(e) => setLocalFilters({ ...localFilters, entreprise: e.target.value })}
-                />
-                <Input
-                  type="date"
-                  label="Date début"
-                  value={localFilters.dateDebut || ''}
-                  onChange={(e) => setLocalFilters({ ...localFilters, dateDebut: e.target.value })}
-                />
-                <Input
-                  type="date"
-                  label="Date fin"
-                  value={localFilters.dateFin || ''}
-                  onChange={(e) => setLocalFilters({ ...localFilters, dateFin: e.target.value })}
                 />
               </div>
               <div className="flex justify-end gap-2 mt-4">
@@ -279,18 +256,12 @@ export const DashboardPage: React.FC = () => {
 
           {/* Table */}
           <Table
-            data={signalements}
+            data={filteredSignalements}
             columns={columns}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) => item.id.toString()}
             onRowClick={handleEdit}
             isLoading={isLoading}
             emptyMessage="Aucun signalement trouvé"
-            pagination={{
-              page: pagination.page,
-              pageSize: pagination.size,
-              totalItems: pagination.totalElements,
-              onPageChange: fetchSignalements,
-            }}
           />
         </Card>
       </div>

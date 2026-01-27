@@ -26,19 +26,19 @@ const navItems: NavItem[] = [
     path: '/signalement', 
     label: 'Signaler', 
     icon: <FileText className="w-5 h-5" />,
-    roles: ['UTILISATEUR', 'MANAGER', 'ADMIN']
+    roles: ['UTILISATEUR_MOBILE', 'MANAGER']
   },
   { 
     path: '/dashboard', 
     label: 'Dashboard', 
     icon: <LayoutDashboard className="w-5 h-5" />,
-    roles: ['MANAGER', 'ADMIN']
+    roles: ['MANAGER']
   },
   { 
     path: '/users-blocked', 
     label: 'Utilisateurs bloqués', 
     icon: <Users className="w-5 h-5" />,
-    roles: ['MANAGER', 'ADMIN']
+    roles: ['MANAGER']
   },
 ];
 

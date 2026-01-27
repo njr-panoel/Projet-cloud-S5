@@ -59,7 +59,7 @@ export const router = createBrowserRouter([
       {
         path: 'signalement',
         element: (
-          <ProtectedRoute allowedRoles={['UTILISATEUR', 'MANAGER', 'ADMIN']}>
+          <ProtectedRoute allowedRoles={['UTILISATEUR_MOBILE', 'MANAGER']}>
             <SignalementPage />
           </ProtectedRoute>
         ),
@@ -67,7 +67,7 @@ export const router = createBrowserRouter([
       {
         path: 'dashboard',
         element: (
-          <ProtectedRoute allowedRoles={['MANAGER', 'ADMIN']}>
+          <ProtectedRoute allowedRoles={['MANAGER']}>
             <DashboardPage />
           </ProtectedRoute>
         ),
@@ -75,7 +75,7 @@ export const router = createBrowserRouter([
       {
         path: 'users-blocked',
         element: (
-          <ProtectedRoute allowedRoles={['MANAGER', 'ADMIN']}>
+          <ProtectedRoute allowedRoles={['MANAGER']}>
             <UsersBlockedPage />
           </ProtectedRoute>
         ),

@@ -1,5 +1,5 @@
 import React from 'react';
-import type { SignalementStatut, SignalementPriorite } from '../../types';
+import type { SignalementStatut, TypeTravaux } from '../../types';
 
 type BadgeVariant = 'primary' | 'success' | 'warning' | 'danger' | 'secondary';
 
@@ -35,16 +35,16 @@ export const Badge: React.FC<BadgeProps> = ({
   );
 };
 
-// Statut badge helper
+// Statut badge helper - aligned with backend StatutSignalement enum
 export const getStatutBadgeVariant = (statut: SignalementStatut): BadgeVariant => {
   switch (statut) {
-    case 'SIGNALE':
+    case 'NOUVEAU':
       return 'warning';
     case 'EN_COURS':
       return 'primary';
     case 'TERMINE':
       return 'success';
-    case 'REJETE':
+    case 'ANNULE':
       return 'danger';
     default:
       return 'secondary';
@@ -53,46 +53,58 @@ export const getStatutBadgeVariant = (statut: SignalementStatut): BadgeVariant =
 
 export const getStatutLabel = (statut: SignalementStatut): string => {
   switch (statut) {
-    case 'SIGNALE':
-      return 'Signalé';
+    case 'NOUVEAU':
+      return 'Nouveau';
     case 'EN_COURS':
       return 'En cours';
     case 'TERMINE':
       return 'Terminé';
-    case 'REJETE':
-      return 'Rejeté';
+    case 'ANNULE':
+      return 'Annulé';
     default:
       return statut;
   }
 };
 
-// Priorité badge helper
-export const getPrioriteBadgeVariant = (priorite: SignalementPriorite): BadgeVariant => {
-  switch (priorite) {
-    case 'BASSE':
-      return 'secondary';
-    case 'MOYENNE':
-      return 'primary';
-    case 'HAUTE':
-      return 'warning';
-    case 'URGENTE':
+// Type travaux badge helper - aligned with backend TypeTravaux enum
+export const getTypeBadgeVariant = (type: TypeTravaux): BadgeVariant => {
+  switch (type) {
+    case 'NIDS_DE_POULE':
       return 'danger';
+    case 'FISSURE':
+      return 'warning';
+    case 'AFFAISSEMENT':
+      return 'danger';
+    case 'INONDATION':
+      return 'primary';
+    case 'SIGNALISATION':
+      return 'secondary';
+    case 'ECLAIRAGE':
+      return 'warning';
+    case 'AUTRE':
+      return 'secondary';
     default:
       return 'secondary';
   }
 };
 
-export const getPrioriteLabel = (priorite: SignalementPriorite): string => {
-  switch (priorite) {
-    case 'BASSE':
-      return 'Basse';
-    case 'MOYENNE':
-      return 'Moyenne';
-    case 'HAUTE':
-      return 'Haute';
-    case 'URGENTE':
-      return 'Urgente';
+export const getTypeLabel = (type: TypeTravaux): string => {
+  switch (type) {
+    case 'NIDS_DE_POULE':
+      return 'Nids de poule';
+    case 'FISSURE':
+      return 'Fissure';
+    case 'AFFAISSEMENT':
+      return 'Affaissement';
+    case 'INONDATION':
+      return 'Inondation';
+    case 'SIGNALISATION':
+      return 'Signalisation';
+    case 'ECLAIRAGE':
+      return 'Éclairage';
+    case 'AUTRE':
+      return 'Autre';
     default:
-      return priorite;
+      return type;
   }
 };

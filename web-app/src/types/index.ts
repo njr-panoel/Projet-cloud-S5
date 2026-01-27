@@ -1,16 +1,21 @@
-// User types
-export type UserRole = 'VISITEUR' | 'UTILISATEUR' | 'MANAGER' | 'ADMIN';
+// User types - correspond aux rôles backend
+export type UserRole = 'VISITEUR' | 'MANAGER' | 'UTILISATEUR_MOBILE';
+export type AuthProvider = 'LOCAL' | 'FIREBASE';
 
 export interface User {
-  id: string;
+  id: number;
   email: string;
   nom: string;
   prenom: string;
-  role: UserRole;
   telephone?: string;
-  blocked: boolean;
+  role: UserRole;
+  authProvider: AuthProvider;
+  active: boolean;
+  accountLocked: boolean;
+  lockedUntil?: string;
+  loginAttempts?: number;
   createdAt: string;
-  updatedAt: string;
+  lastLoginAt?: string;
 }
 
 export interface AuthState {
@@ -20,67 +25,62 @@ export interface AuthState {
   isLoading: boolean;
 }
 
-// Signalement types
-export type SignalementStatut = 'SIGNALE' | 'EN_COURS' | 'TERMINE' | 'REJETE';
-export type SignalementPriorite = 'BASSE' | 'MOYENNE' | 'HAUTE' | 'URGENTE';
-export type TypeTravaux = 'ROUTE' | 'TROTTOIR' | 'ECLAIRAGE' | 'ASSAINISSEMENT' | 'AUTRE';
+export interface AuthResponse {
+  token: string;
+  type: string;
+  user: User;
+  expiresIn: number;
+}
+
+// Signalement types - correspond aux enums backend
+export type SignalementStatut = 'NOUVEAU' | 'EN_COURS' | 'TERMINE' | 'ANNULE';
+export type TypeTravaux = 'NIDS_DE_POULE' | 'FISSURE' | 'AFFAISSEMENT' | 'INONDATION' | 'SIGNALISATION' | 'ECLAIRAGE' | 'AUTRE';
 
 export interface Signalement {
-  id: string;
+  id: number;
   titre: string;
-  description: string;
+  description?: string;
+  typeTravaux: TypeTravaux;
+  statut: SignalementStatut;
   latitude: number;
   longitude: number;
   adresse?: string;
-  statut: SignalementStatut;
-  priorite: SignalementPriorite;
-  typeTravaux: TypeTravaux;
-  photos: string[];
-  surface?: number;
-  budget?: number;
-  entreprise?: string;
-  dateDebut?: string;
-  dateFin?: string;
-  userId: string;
-  userNom?: string;
+  photos?: string; // URLs séparées par virgules
+  user: User;
+  synced: boolean;
+  firebaseId?: string;
   createdAt: string;
   updatedAt: string;
+  completedAt?: string;
 }
 
 export interface SignalementFormData {
   titre: string;
-  description: string;
+  description?: string;
+  typeTravaux: TypeTravaux;
+  statut?: SignalementStatut;
   latitude: number;
   longitude: number;
   adresse?: string;
-  typeTravaux: TypeTravaux;
-  priorite?: SignalementPriorite;
-  photos?: File[];
+  photos?: string;
+  firebaseId?: string;
 }
 
-// Stats types
+// Stats types - calculées côté frontend à partir de la liste
 export interface GlobalStats {
   totalSignalements: number;
+  nouveau: number;
   enCours: number;
   termines: number;
-  surfaceTotale: number;
-  budgetTotal: number;
+  annules: number;
   pourcentageTermine: number;
 }
 
-// API types
+// API types - correspond à ApiResponse du backend
 export interface ApiResponse<T> {
   success: boolean;
-  data: T;
   message?: string;
-}
-
-export interface PaginatedResponse<T> {
-  content: T[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
+  data: T;
 }
 
 export interface LoginRequest {
@@ -98,17 +98,9 @@ export interface RegisterRequest {
   role?: UserRole;
 }
 
-export interface AuthResponse {
-  token: string;
-  user: User;
-}
-
 // Filter types
 export interface SignalementFilters {
   statut?: SignalementStatut | '';
   typeTravaux?: TypeTravaux | '';
-  entreprise?: string;
-  dateDebut?: string;
-  dateFin?: string;
   search?: string;
 }

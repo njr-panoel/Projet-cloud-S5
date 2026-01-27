@@ -1,14 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { User, AuthState, LoginRequest, RegisterRequest } from '../types';
+import type { AuthState, LoginRequest, RegisterRequest } from '../types';
 import { authService } from '../services/authService';
 
 interface AuthStore extends AuthState {
   login: (data: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
-  logout: () => void;
-  checkAuth: () => Promise<void>;
-  updateUser: (data: Partial<User>) => Promise<void>;
+  logout: () => Promise<void>;
+  checkAuth: () => Promise<boolean>;
 }
 
 export const useAuthStore = create<AuthStore>()(
@@ -51,7 +50,12 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      logout: () => {
+      logout: async () => {
+        try {
+          await authService.logout();
+        } catch {
+          // Ignore logout errors
+        }
         set({
           user: null,
           token: null,
@@ -60,13 +64,31 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       checkAuth: async () => {
-        const token = get().token;
-        if (!token) return;
+        const { token, user } = get();
+        if (!token) return false;
 
+        // If we already have user data, just verify token is still valid
         set({ isLoading: true });
         try {
-          const user = await authService.getMe();
-          set({ user, isAuthenticated: true, isLoading: false });
+          const email = await authService.checkAuth();
+          if (email) {
+            // Token is valid, keep existing user if email matches
+            if (user && user.email === email) {
+              set({ isAuthenticated: true, isLoading: false });
+              return true;
+            }
+            // Token is valid but we don't have full user data
+            set({ isAuthenticated: true, isLoading: false });
+            return true;
+          }
+          // Token is invalid
+          set({
+            user: null,
+            token: null,
+            isAuthenticated: false,
+            isLoading: false,
+          });
+          return false;
         } catch {
           set({
             user: null,
@@ -74,23 +96,13 @@ export const useAuthStore = create<AuthStore>()(
             isAuthenticated: false,
             isLoading: false,
           });
-        }
-      },
-
-      updateUser: async (data: Partial<User>) => {
-        set({ isLoading: true });
-        try {
-          const user = await authService.updateProfile(data);
-          set({ user, isLoading: false });
-        } catch (error) {
-          set({ isLoading: false });
-          throw error;
+          return false;
         }
       },
     }),
     {
       name: 'auth-storage',
-      partialize: (state) => ({ token: state.token }),
+      partialize: (state) => ({ token: state.token, user: state.user }),
     }
   )
 );

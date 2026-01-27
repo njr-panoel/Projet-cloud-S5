@@ -3,82 +3,114 @@ import { config } from '../config';
 import type { 
   Signalement, 
   SignalementFormData, 
-  PaginatedResponse, 
   SignalementFilters,
-  GlobalStats 
+  GlobalStats,
+  ApiResponse,
+  SignalementStatut
 } from '../types';
 
 export const signalementService = {
-  async getAll(
-    page = 0, 
-    size = 10, 
-    filters?: SignalementFilters
-  ): Promise<PaginatedResponse<Signalement>> {
-    const params = new URLSearchParams();
-    params.append('page', page.toString());
-    params.append('size', size.toString());
-    
-    if (filters) {
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value) params.append(key, value);
-      });
+  // Récupérer tous les signalements (public)
+  async getAll(): Promise<Signalement[]> {
+    const response = await api.get<ApiResponse<Signalement[]>>(config.endpoints.signalements.base);
+    return response.data.data || [];
+  },
+
+  // Récupérer un signalement par ID (public)
+  async getById(id: number): Promise<Signalement> {
+    const response = await api.get<ApiResponse<Signalement>>(config.endpoints.signalements.byId(id));
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Signalement non trouvé');
     }
-    
-    const response = await api.get<PaginatedResponse<Signalement>>(
-      `${config.endpoints.signalements.base}?${params.toString()}`
-    );
-    return response.data;
+    return response.data.data;
   },
 
-  async getById(id: string): Promise<Signalement> {
-    const response = await api.get<Signalement>(config.endpoints.signalements.byId(id));
-    return response.data;
+  // Récupérer par statut
+  async getByStatut(statut: string): Promise<Signalement[]> {
+    const response = await api.get<ApiResponse<Signalement[]>>(config.endpoints.signalements.byStatut(statut));
+    return response.data.data || [];
   },
 
-  async getMine(): Promise<Signalement[]> {
-    const response = await api.get<Signalement[]>(config.endpoints.signalements.mine);
-    return response.data;
+  // Récupérer par type
+  async getByType(type: string): Promise<Signalement[]> {
+    const response = await api.get<ApiResponse<Signalement[]>>(config.endpoints.signalements.byType(type));
+    return response.data.data || [];
   },
 
+  // Créer un signalement (authentifié)
   async create(data: SignalementFormData): Promise<Signalement> {
-    const formData = new FormData();
-    formData.append('titre', data.titre);
-    formData.append('description', data.description);
-    formData.append('latitude', data.latitude.toString());
-    formData.append('longitude', data.longitude.toString());
-    formData.append('typeTravaux', data.typeTravaux);
-    
-    if (data.adresse) formData.append('adresse', data.adresse);
-    if (data.priorite) formData.append('priorite', data.priorite);
-    
-    if (data.photos) {
-      data.photos.forEach((photo) => {
-        formData.append('photos', photo);
-      });
-    }
-
-    const response = await api.post<Signalement>(
+    const response = await api.post<ApiResponse<Signalement>>(
       config.endpoints.signalements.base, 
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
+      data
     );
-    return response.data;
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Erreur lors de la création');
+    }
+    return response.data.data;
   },
 
-  async update(id: string, data: Partial<Signalement>): Promise<Signalement> {
-    const response = await api.patch<Signalement>(
+  // Mettre à jour un signalement (Manager ou UTILISATEUR_MOBILE)
+  async update(id: number, data: SignalementFormData): Promise<Signalement> {
+    const response = await api.put<ApiResponse<Signalement>>(
       config.endpoints.signalements.byId(id), 
       data
     );
-    return response.data;
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Erreur lors de la mise à jour');
+    }
+    return response.data.data;
   },
 
-  async delete(id: string): Promise<void> {
-    await api.delete(config.endpoints.signalements.byId(id));
+  // Mettre à jour le statut (Manager uniquement)
+  async updateStatut(id: number, statut: SignalementStatut): Promise<Signalement> {
+    const response = await api.patch<ApiResponse<Signalement>>(
+      `${config.endpoints.signalements.updateStatut(id)}?statut=${statut}`
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Erreur lors de la mise à jour du statut');
+    }
+    return response.data.data;
   },
 
-  async getStats(): Promise<GlobalStats> {
-    const response = await api.get<GlobalStats>(config.endpoints.signalements.stats);
-    return response.data;
+  // Supprimer un signalement (Manager uniquement)
+  async delete(id: number): Promise<void> {
+    const response = await api.delete<ApiResponse<void>>(config.endpoints.signalements.byId(id));
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Erreur lors de la suppression');
+    }
+  },
+
+  // Calculer les statistiques à partir de la liste
+  calculateStats(signalements: Signalement[]): GlobalStats {
+    const total = signalements.length;
+    const nouveau = signalements.filter(s => s.statut === 'NOUVEAU').length;
+    const enCours = signalements.filter(s => s.statut === 'EN_COURS').length;
+    const termines = signalements.filter(s => s.statut === 'TERMINE').length;
+    const annules = signalements.filter(s => s.statut === 'ANNULE').length;
+    
+    return {
+      totalSignalements: total,
+      nouveau,
+      enCours,
+      termines,
+      annules,
+      pourcentageTermine: total > 0 ? Math.round((termines / total) * 100) : 0,
+    };
+  },
+
+  // Filtrer les signalements côté client
+  filterSignalements(signalements: Signalement[], filters: SignalementFilters): Signalement[] {
+    return signalements.filter(s => {
+      if (filters.statut && s.statut !== filters.statut) return false;
+      if (filters.typeTravaux && s.typeTravaux !== filters.typeTravaux) return false;
+      if (filters.search) {
+        const searchLower = filters.search.toLowerCase();
+        const matchTitre = s.titre.toLowerCase().includes(searchLower);
+        const matchDescription = s.description?.toLowerCase().includes(searchLower);
+        const matchAdresse = s.adresse?.toLowerCase().includes(searchLower);
+        if (!matchTitre && !matchDescription && !matchAdresse) return false;
+      }
+      return true;
+    });
   },
 };

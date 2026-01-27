@@ -7,28 +7,16 @@ import type { User } from '../../types';
 
 export const UsersBlockedPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
-  const [pagination, setPagination] = useState({
-    page: 0,
-    size: 10,
-    totalElements: 0,
-    totalPages: 0,
-  });
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showUnblockModal, setShowUnblockModal] = useState(false);
 
-  const fetchBlockedUsers = async (page = 0) => {
+  const fetchBlockedUsers = async () => {
     setIsLoading(true);
     try {
-      const response = await userService.getBlocked(page, pagination.size);
-      setUsers(response.content);
-      setPagination({
-        page: response.number,
-        size: response.size,
-        totalElements: response.totalElements,
-        totalPages: response.totalPages,
-      });
+      const response = await userService.getLocked();
+      setUsers(response);
     } catch (error) {
       Toast.error('Erreur lors du chargement des utilisateurs');
     } finally {
@@ -48,11 +36,11 @@ export const UsersBlockedPage: React.FC = () => {
   const confirmUnblock = async () => {
     if (!selectedUser) return;
     try {
-      await userService.unblockUser(selectedUser.id);
+      await userService.unlockUser(selectedUser.id);
       Toast.success(`${selectedUser.prenom} ${selectedUser.nom} a été débloqué`);
       setShowUnblockModal(false);
       setSelectedUser(null);
-      fetchBlockedUsers(pagination.page);
+      fetchBlockedUsers();
     } catch (error) {
       Toast.error('Erreur lors du déblocage');
     }
@@ -132,7 +120,7 @@ export const UsersBlockedPage: React.FC = () => {
             <div>
               <h1 className="text-2xl font-bold text-secondary-800">Utilisateurs Bloqués</h1>
               <p className="text-secondary-500 text-sm">
-                {pagination.totalElements} utilisateur(s) bloqué(s)
+                {users.length} utilisateur(s) bloqué(s)
               </p>
             </div>
           </div>
@@ -156,15 +144,9 @@ export const UsersBlockedPage: React.FC = () => {
           <Table
             data={filteredUsers}
             columns={columns}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) => item.id.toString()}
             isLoading={isLoading}
             emptyMessage="Aucun utilisateur bloqué"
-            pagination={{
-              page: pagination.page,
-              pageSize: pagination.size,
-              totalItems: pagination.totalElements,
-              onPageChange: fetchBlockedUsers,
-            }}
           />
         </Card>
       </div>

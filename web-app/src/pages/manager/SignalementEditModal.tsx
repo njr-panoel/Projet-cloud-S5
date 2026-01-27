@@ -5,19 +5,16 @@ import { z } from 'zod';
 import { Modal, ModalFooter, Button, Input, Select } from '../../components/ui';
 import { Toast } from '../../components/ui/Toast';
 import { useSignalementStore } from '../../stores/signalementStore';
-import type { Signalement } from '../../types';
+import type { Signalement, SignalementFormData, SignalementStatut } from '../../types';
 
 const editSchema = z.object({
   titre: z.string().min(5, 'Titre minimum 5 caractères'),
-  description: z.string().min(20, 'Description minimum 20 caractères'),
-  statut: z.enum(['SIGNALE', 'EN_COURS', 'TERMINE', 'REJETE']),
-  priorite: z.enum(['BASSE', 'MOYENNE', 'HAUTE', 'URGENTE']),
-  typeTravaux: z.enum(['ROUTE', 'TROTTOIR', 'ECLAIRAGE', 'ASSAINISSEMENT', 'AUTRE']),
-  entreprise: z.string().optional(),
-  surface: z.coerce.number().optional(),
-  budget: z.coerce.number().optional(),
-  dateDebut: z.string().optional(),
-  dateFin: z.string().optional(),
+  description: z.string().optional(),
+  statut: z.enum(['NOUVEAU', 'EN_COURS', 'TERMINE', 'ANNULE']),
+  typeTravaux: z.enum(['NIDS_DE_POULE', 'FISSURE', 'AFFAISSEMENT', 'INONDATION', 'SIGNALISATION', 'ECLAIRAGE', 'AUTRE']),
+  adresse: z.string().optional(),
+  latitude: z.coerce.number(),
+  longitude: z.coerce.number(),
 });
 
 type EditFormData = z.infer<typeof editSchema>;
@@ -33,7 +30,7 @@ export const SignalementEditModal: React.FC<SignalementEditModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const { updateSignalement, isLoading } = useSignalementStore();
+  const { updateSignalement, updateStatut, isLoading } = useSignalementStore();
 
   const {
     register,
@@ -43,21 +40,36 @@ export const SignalementEditModal: React.FC<SignalementEditModalProps> = ({
     resolver: zodResolver(editSchema),
     defaultValues: {
       titre: signalement.titre,
-      description: signalement.description,
+      description: signalement.description || '',
       statut: signalement.statut,
-      priorite: signalement.priorite,
       typeTravaux: signalement.typeTravaux,
-      entreprise: signalement.entreprise || '',
-      surface: signalement.surface,
-      budget: signalement.budget,
-      dateDebut: signalement.dateDebut?.split('T')[0],
-      dateFin: signalement.dateFin?.split('T')[0],
+      adresse: signalement.adresse || '',
+      latitude: signalement.latitude,
+      longitude: signalement.longitude,
     },
   });
 
   const onSubmit = async (data: FieldValues) => {
     try {
-      await updateSignalement(signalement.id, data as EditFormData);
+      const formData = data as EditFormData;
+      
+      // If only status changed, use updateStatut
+      if (formData.statut !== signalement.statut) {
+        await updateStatut(signalement.id, formData.statut as SignalementStatut);
+      }
+      
+      // Update the signalement with other fields
+      const updateData: SignalementFormData = {
+        titre: formData.titre,
+        description: formData.description,
+        typeTravaux: formData.typeTravaux,
+        statut: formData.statut,
+        adresse: formData.adresse,
+        latitude: formData.latitude,
+        longitude: formData.longitude,
+      };
+      
+      await updateSignalement(signalement.id, updateData);
       Toast.success('Signalement mis à jour');
       onClose();
     } catch {
@@ -66,24 +78,19 @@ export const SignalementEditModal: React.FC<SignalementEditModalProps> = ({
   };
 
   const statutOptions = [
-    { value: 'SIGNALE', label: 'Signalé' },
+    { value: 'NOUVEAU', label: 'Nouveau' },
     { value: 'EN_COURS', label: 'En cours' },
     { value: 'TERMINE', label: 'Terminé' },
-    { value: 'REJETE', label: 'Rejeté' },
-  ];
-
-  const prioriteOptions = [
-    { value: 'BASSE', label: 'Basse' },
-    { value: 'MOYENNE', label: 'Moyenne' },
-    { value: 'HAUTE', label: 'Haute' },
-    { value: 'URGENTE', label: 'Urgente' },
+    { value: 'ANNULE', label: 'Annulé' },
   ];
 
   const typeOptions = [
-    { value: 'ROUTE', label: 'Route' },
-    { value: 'TROTTOIR', label: 'Trottoir' },
+    { value: 'NIDS_DE_POULE', label: 'Nids de poule' },
+    { value: 'FISSURE', label: 'Fissure' },
+    { value: 'AFFAISSEMENT', label: 'Affaissement' },
+    { value: 'INONDATION', label: 'Inondation' },
+    { value: 'SIGNALISATION', label: 'Signalisation' },
     { value: 'ECLAIRAGE', label: 'Éclairage' },
-    { value: 'ASSAINISSEMENT', label: 'Assainissement' },
     { value: 'AUTRE', label: 'Autre' },
   ];
 
@@ -109,7 +116,7 @@ export const SignalementEditModal: React.FC<SignalementEditModalProps> = ({
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Select
             {...register('statut')}
             label="Statut"
@@ -117,50 +124,31 @@ export const SignalementEditModal: React.FC<SignalementEditModalProps> = ({
             error={errors.statut?.message}
           />
           <Select
-            {...register('priorite')}
-            label="Priorité"
-            options={prioriteOptions}
-            error={errors.priorite?.message}
-          />
-          <Select
             {...register('typeTravaux')}
-            label="Type"
+            label="Type de travaux"
             options={typeOptions}
             error={errors.typeTravaux?.message}
           />
         </div>
 
         <Input
-          {...register('entreprise')}
-          label="Entreprise"
-          placeholder="Nom de l'entreprise"
+          {...register('adresse')}
+          label="Adresse"
+          placeholder="Adresse du signalement"
         />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input
-            {...register('surface')}
+            {...register('latitude')}
             type="number"
-            label="Surface (m²)"
-            placeholder="0"
+            step="0.000001"
+            label="Latitude"
           />
           <Input
-            {...register('budget')}
+            {...register('longitude')}
             type="number"
-            label="Budget (Ar)"
-            placeholder="0"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Input
-            {...register('dateDebut')}
-            type="date"
-            label="Date de début"
-          />
-          <Input
-            {...register('dateFin')}
-            type="date"
-            label="Date de fin"
+            step="0.000001"
+            label="Longitude"
           />
         </div>
 

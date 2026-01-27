@@ -29,11 +29,11 @@ const createIcon = (color: string) =>
     shadowSize: [41, 41],
   });
 
-const statusIcons = {
-  SIGNALE: createIcon('orange'),
+const statusIcons: Record<string, L.Icon> = {
+  NOUVEAU: createIcon('orange'),
   EN_COURS: createIcon('blue'),
   TERMINE: createIcon('green'),
-  REJETE: createIcon('red'),
+  ANNULE: createIcon('red'),
 };
 
 interface MapComponentProps {

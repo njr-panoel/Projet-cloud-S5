@@ -5,4 +5,4 @@ export { Table } from './Table';
 export { Toast } from './Toast';
 export { Input } from './Input';
 export { Select } from './Select';
-export { Badge, getStatutBadgeVariant, getStatutLabel, getPrioriteBadgeVariant, getPrioriteLabel } from './Badge';
+export { Badge, getStatutBadgeVariant, getStatutLabel, getTypeBadgeVariant, getTypeLabel } from './Badge';

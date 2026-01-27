@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, Clock, CheckCircle, MapPin, DollarSign, Percent } from 'lucide-react';
+import { TrendingUp, Clock, CheckCircle, MapPin, AlertTriangle, XCircle, Percent } from 'lucide-react';
 import { Card } from '../ui';
 import type { GlobalStats } from '../../types';
 
@@ -59,23 +59,6 @@ export const StatsGlobal: React.FC<StatsGlobalProps> = ({ stats, isLoading }) =>
     return null;
   }
 
-  const formatCurrency = (value: number) => {
-    if (value >= 1000000) {
-      return `${(value / 1000000).toFixed(1)}M Ar`;
-    }
-    if (value >= 1000) {
-      return `${(value / 1000).toFixed(0)}K Ar`;
-    }
-    return `${value} Ar`;
-  };
-
-  const formatSurface = (value: number) => {
-    if (value >= 1000) {
-      return `${(value / 1000).toFixed(1)}K m²`;
-    }
-    return `${value} m²`;
-  };
-
   const statCards = [
     {
       title: 'Total Signalements',
@@ -84,10 +67,16 @@ export const StatsGlobal: React.FC<StatsGlobalProps> = ({ stats, isLoading }) =>
       color: 'bg-primary-500',
     },
     {
+      title: 'Nouveaux',
+      value: stats.nouveau,
+      icon: <AlertTriangle className="w-6 h-6 text-white" />,
+      color: 'bg-warning-500',
+    },
+    {
       title: 'En Cours',
       value: stats.enCours,
       icon: <Clock className="w-6 h-6 text-white" />,
-      color: 'bg-warning-500',
+      color: 'bg-primary-400',
     },
     {
       title: 'Terminés',
@@ -96,20 +85,14 @@ export const StatsGlobal: React.FC<StatsGlobalProps> = ({ stats, isLoading }) =>
       color: 'bg-success-500',
     },
     {
-      title: 'Surface Totale',
-      value: formatSurface(stats.surfaceTotale),
-      icon: <MapPin className="w-6 h-6 text-white" />,
-      color: 'bg-secondary-500',
-    },
-    {
-      title: 'Budget Total',
-      value: formatCurrency(stats.budgetTotal),
-      icon: <DollarSign className="w-6 h-6 text-white" />,
+      title: 'Annulés',
+      value: stats.annules,
+      icon: <XCircle className="w-6 h-6 text-white" />,
       color: 'bg-danger-500',
     },
     {
       title: 'Taux Achèvement',
-      value: `${stats.pourcentageTermine.toFixed(1)}%`,
+      value: `${stats.pourcentageTermine}%`,
       icon: <Percent className="w-6 h-6 text-white" />,
       color: 'bg-success-600',
     },

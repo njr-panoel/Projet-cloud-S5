@@ -48,7 +48,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onLoginCl
         nom: data.nom,
         prenom: data.prenom,
         telephone: data.telephone,
-        role: 'UTILISATEUR',
+        role: 'UTILISATEUR_MOBILE',
       });
       setIsRegistered(true);
       Toast.success('Compte créé avec succès !');
