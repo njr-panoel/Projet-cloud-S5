@@ -1,0 +1,7 @@
+{
+  "name": "cloud-s5-road-report",
+  "type": "vue",
+  "integrations": {
+    "capacitor": {}
+  }
+}

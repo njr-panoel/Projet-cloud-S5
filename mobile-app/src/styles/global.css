@@ -1,0 +1,90 @@
+/* Global styles + utilities for the app */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+:root {
+  --app-max-width: 1100px;
+  --card-radius: 14px;
+  --card-shadow: 0 12px 30px rgba(2,6,23,0.08);
+  --muted: #6b7280;
+  --page-padding: 16px;
+}
+
+html, body, #app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(180deg, rgba(14,165,164,0.03) 0%, rgba(30,58,138,0.02) 100%);
+  color: #0f172a; /* navy-gray */
+}
+
+.ion-page { display: flex; flex-direction: column; min-height: 100vh; }
+
+.page-container {
+  width: 100%;
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  padding: var(--page-padding);
+  box-sizing: border-box;
+}
+
+.page-header {
+  background: linear-gradient(90deg, rgba(30,58,138,1), rgba(14,165,164,1));
+  color: white;
+}
+
+/* Card look consistent */
+.card-rounded {
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+}
+
+/* Buttons */
+.ion-button.ion-color-primary { --background: var(--ion-color-primary); --color: white; border-radius: 10px; font-weight: 600; }
+
+/* Form inputs spacing */
+ion-item { --padding-start: 12px; --inner-padding-end: 12px; margin-top: 8px; }
+
+/* Map container baseline */
+.map-full { width: 100%; height: calc(100vh - 56px); position: relative; border-radius: 10px; overflow: hidden; box-shadow: 0 6px 20px rgba(2,6,23,0.06); }
+
+/* Floating action button tweaks */
+ion-fab { right: 16px; bottom: 20px; z-index: 1200; }
+
+/* Login */
+.login-wrapper { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; padding: 20px; }
+.login-card { width: 100%; max-width: 460px; }
+
+/* List items */
+.list-card { display: flex; gap: 12px; align-items: center; padding: 12px; }
+.list-thumbnail { width: 64px; height: 64px; border-radius: 8px; object-fit: cover; }
+.list-title { font-weight: 600; color: #0f172a; }
+.list-meta { font-size: 13px; color: var(--muted); }
+
+/* Stats */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.stats-card { padding: 12px; border-radius: 10px; background: linear-gradient(180deg, rgba(14,165,164,0.04), rgba(30,58,138,0.02)); }
+.stats-value { font-size: 20px; font-weight: 700; color: var(--ion-color-primary); }
+
+/* Avatar */
+.avatar { width: 96px; height: 96px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(90deg, rgba(30,58,138,0.9), rgba(14,165,164,0.9)); color: white; font-weight: 700; font-size: 26px; }
+
+/* Modal form */
+.ion-modal .ion-content { --background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%); }
+
+/* Image preview */
+.preview img { max-width: 100%; height: auto; border-radius: 8px; display: block; margin: 8px auto; }
+
+/* Leaflet popup */
+.leaflet-popup-content-wrapper { border-radius: 8px !important; }
+
+@media (min-width: 800px) {
+  .ion-content.ion-padding { padding-left: 24px; padding-right: 24px; }
+}
