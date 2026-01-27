@@ -3,6 +3,7 @@ package com.cloud.dev.service;
 import com.cloud.dev.entity.Signalement;
 import com.cloud.dev.entity.SyncLog;
 import com.cloud.dev.entity.User;
+import com.cloud.dev.dto.response.SyncLogResponse;
 import com.cloud.dev.repository.SignalementRepository;
 import com.cloud.dev.repository.SyncLogRepository;
 import com.cloud.dev.repository.UserRepository;
@@ -10,6 +11,7 @@ import com.google.firebase.database.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -171,5 +174,34 @@ public class SyncService {
         stats.put("firebaseEnabled", firebaseEnabled);
         
         return stats;
+    }
+
+    public List<SyncLogResponse> getSyncLogs(Boolean success, Integer limit) {
+        int safeLimit = (limit == null || limit < 1) ? 50 : Math.min(limit, 500);
+
+        List<SyncLog> logs;
+        if (success == null) {
+            logs = syncLogRepository.findAll(Sort.by(Sort.Direction.DESC, "syncedAt"));
+        } else {
+            logs = syncLogRepository.findBySuccessOrderBySyncedAtDesc(success);
+        }
+
+        return logs.stream()
+                .limit(safeLimit)
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    private SyncLogResponse mapToResponse(SyncLog log) {
+        return SyncLogResponse.builder()
+                .id(log.getId())
+                .entityType(log.getEntityType())
+                .entityId(log.getEntityId())
+                .action(log.getAction())
+                .firebaseId(log.getFirebaseId())
+                .success(log.getSuccess())
+                .errorMessage(log.getErrorMessage())
+                .syncedAt(log.getSyncedAt())
+                .build();
     }
 }

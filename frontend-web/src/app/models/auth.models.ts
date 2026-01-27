@@ -1,29 +1,41 @@
 export interface LoginRequest {
   email: string;
   password: string;
+  deviceInfo?: string;
+  useFirebase?: boolean;
 }
 
 export interface RegisterRequest {
-  nom: string;
   email: string;
   password: string;
+  nom: string;
+  prenom: string;
+  telephone?: string | null;
+  role?: 'VISITEUR' | 'MANAGER' | 'UTILISATEUR_MOBILE';
+  firebaseUid?: string | null;
 }
 
 export interface AuthResponse {
-  userId: number;
-  nom: string;
-  email: string;
-  role: string;
-  accessToken: string;
-  refreshToken: string;
+  token: string;
+  type: string;
+  user: UserResponse;
   expiresIn: number;
 }
 
 export interface UserProfileDto {
   id: number;
-  nom: string;
   email: string;
-  role: string;
+  nom: string;
+  prenom: string;
+  telephone: string | null;
+  role: 'VISITEUR' | 'MANAGER' | 'UTILISATEUR_MOBILE';
+  authProvider: 'LOCAL' | 'FIREBASE';
+  active: boolean;
+  accountLocked: boolean;
+  lockedUntil: string | null;
+  loginAttempts: number;
   createdAt: string;
-  updatedAt: string;
+  lastLoginAt: string | null;
 }
+
+export type UserResponse = UserProfileDto;

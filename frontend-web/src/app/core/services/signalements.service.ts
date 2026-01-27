@@ -1,10 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 
 import { ApiService } from './api.service';
-import { Page } from '../../models/page.models';
 import {
   CreateSignalementRequest,
   SignalementDto,
+  StatutSignalement,
   UpdateSignalementRequest
 } from '../../models/signalement.models';
 
@@ -12,15 +12,8 @@ import {
 export class SignalementsService {
   private readonly api = inject(ApiService);
 
-  list(params?: {
-    statut?: string;
-    dateMin?: string;
-    dateMax?: string;
-    entreprise?: string;
-    page?: number;
-    size?: number;
-  }) {
-    return this.api.get<Page<SignalementDto>>('/signalements', params);
+  listAll() {
+    return this.api.get<SignalementDto[]>('/signalements');
   }
 
   getById(id: number) {
@@ -32,14 +25,14 @@ export class SignalementsService {
   }
 
   update(id: number, payload: UpdateSignalementRequest) {
-    return this.api.patch<SignalementDto>(`/signalements/${id}`, payload);
+    return this.api.put<SignalementDto>(`/signalements/${id}`, payload as unknown as Record<string, unknown>);
+  }
+
+  updateStatut(id: number, statut: StatutSignalement) {
+    return this.api.patch<SignalementDto>(`/signalements/${id}/statut`, null, { statut });
   }
 
   delete(id: number) {
     return this.api.delete<void>(`/signalements/${id}`);
-  }
-
-  myReports(params?: { page?: number; size?: number }) {
-    return this.api.get<Page<SignalementDto>>('/signalements/user/my-reports', params);
   }
 }

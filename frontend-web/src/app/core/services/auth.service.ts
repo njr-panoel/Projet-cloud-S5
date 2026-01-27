@@ -3,10 +3,10 @@ import { Router } from '@angular/router';
 import { catchError, tap, throwError } from 'rxjs';
 
 import { ApiService } from './api.service';
-import { AuthResponse, LoginRequest, RegisterRequest, UserProfileDto } from '../../models/auth.models';
+import { AuthResponse, LoginRequest, RegisterRequest } from '../../models/auth.models';
 import { SessionService, SessionStorageMode, StoredSession } from './session.service';
 
-export type UserRole = 'USER' | 'MANAGER' | string;
+export type UserRole = 'VISITEUR' | 'MANAGER' | 'UTILISATEUR_MOBILE' | string;
 
 type StoredLoginAttempt = {
   count: number;
@@ -93,54 +93,25 @@ export class AuthService {
   }
 
   loadProfile() {
-    return this.api.get<UserProfileDto>('/auth/me').pipe(
-      tap((profile) => {
-        const session = this.session.getSession();
-        if (!session) {
-          return;
-        }
-        const updated: StoredSession = {
-          ...session,
-          user: {
-            userId: session.user.userId,
-            nom: profile.nom,
-            email: profile.email,
-            role: profile.role
-          }
-        };
-
-        this.session.setSession(updated, this.session.getSessionMode());
-        this.user.set(updated.user);
-      })
-    );
-  }
-
-  updateProfile(payload: { nom: string; email?: string | null }) {
-    return this.api.patch<UserProfileDto>('/auth/profile', payload).pipe(
-      tap((profile) => {
+    return this.api.get<string>('/auth/me').pipe(
+      tap((email) => {
         const current = this.session.getSession();
         if (!current) {
           return;
         }
-
-        const updated: StoredSession = {
-          ...current,
-          user: {
-            userId: current.user.userId,
-            nom: profile.nom,
-            email: profile.email,
-            role: profile.role
-          }
-        };
-
-        this.session.setSession(updated, this.session.getSessionMode());
-        this.user.set(updated.user);
+        if (current.user.email !== email) {
+          const updated: StoredSession = {
+            ...current,
+            user: {
+              ...current.user,
+              email
+            }
+          };
+          this.session.setSession(updated, this.session.getSessionMode());
+          this.user.set(updated.user);
+        }
       })
     );
-  }
-
-  changePassword(payload: { oldPassword: string; newPassword: string }) {
-    return this.api.patch<void>('/auth/password', payload);
   }
 
   isLoginBlocked(email: string): boolean {
@@ -166,14 +137,14 @@ export class AuthService {
   private storeSessionFromAuth(resp: AuthResponse, mode: SessionStorageMode) {
     const expiresAt = Date.now() + this.sessionDurationMs;
     const session: StoredSession = {
-      accessToken: resp.accessToken,
-      refreshToken: resp.refreshToken ?? '',
+      accessToken: resp.token,
+      refreshToken: '',
       expiresAt,
       user: {
-        userId: resp.userId,
-        nom: resp.nom,
-        email: resp.email,
-        role: resp.role
+        userId: resp.user.id,
+        nom: resp.user.nom,
+        email: resp.user.email,
+        role: resp.user.role
       }
     };
 

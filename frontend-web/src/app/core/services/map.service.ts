@@ -74,9 +74,8 @@ export class MapService {
   }
 
   loadSignalements() {
-    return this.signalementsService.list({ page: 0, size: 200 }).pipe(
+    return this.signalementsService.listAll().pipe(
       timeout({ first: 2500 }),
-      map((page) => page.content),
       catchError(() => of(this.getMockSignalements())),
       tap((signalements) => {
         this.allSignalements = signalements;
@@ -199,19 +198,17 @@ export class MapService {
   }
 
   private buildPopupHtml(s: SignalementDto) {
-    const date = this.formatDateFr(s.dateCreation);
+    const date = this.formatDateFr(s.createdAt);
     const statut = this.formatStatutFr(s.statut);
-    const surface = s.surfaceM2 ?? 0;
-    const budget = s.budget ?? 0;
-    const entreprise = s.entreprise ?? '—';
+    const titre = s.titre || '—';
+    const adresse = s.adresse ?? '—';
 
     return `
       <div style="min-width: 220px">
+        <div><strong>Titre:</strong> ${titre}</div>
         <div><strong>Date:</strong> ${date}</div>
         <div><strong>Statut:</strong> ${statut}</div>
-        <div><strong>Surface:</strong> ${surface} m²</div>
-        <div><strong>Budget:</strong> ${budget}</div>
-        <div><strong>Entreprise:</strong> ${entreprise}</div>
+        <div><strong>Adresse:</strong> ${adresse}</div>
       </div>
     `;
   }
@@ -300,78 +297,75 @@ export class MapService {
     return [
       {
         id: 1,
-        userId: 10,
-        nomUtilisateur: 'Test',
+        titre: 'Signalement (mock)',
+        description: 'Nid-de-poule important (mock)',
+        typeTravaux: 'NIDS_DE_POULE',
+        statut: 'NOUVEAU',
         latitude: -18.8792,
         longitude: 47.5079,
-        description: 'Nid-de-poule important (mock)',
-        photoUrl: null,
-        statut: 'NOUVEAU',
-        surfaceM2: 2.5,
-        budget: 150000,
-        entreprise: 'Entreprise A',
-        dateCreation: new Date(Date.now() - 2 * 86400000).toISOString(),
-        dateUpdate: new Date(Date.now() - 2 * 86400000).toISOString()
+        adresse: 'Antananarivo',
+        photos: null,
+        user: {
+          id: 10,
+          email: 'test@example.com',
+          nom: 'Test',
+          prenom: 'User',
+          telephone: null,
+          role: 'VISITEUR'
+        },
+        synced: false,
+        firebaseId: null,
+        createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+        updatedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+        completedAt: null
       },
       {
         id: 2,
-        userId: 11,
-        nomUtilisateur: 'Test',
+        titre: 'Signalement (mock)',
+        description: 'Chaussée dégradée (mock)',
+        typeTravaux: 'FISSURE',
+        statut: 'EN_COURS',
         latitude: -18.8725,
         longitude: 47.5162,
-        description: 'Chaussée dégradée (mock)',
-        photoUrl: null,
-        statut: 'EN_COURS',
-        surfaceM2: 12,
-        budget: 1200000,
-        entreprise: 'Entreprise B',
-        dateCreation: new Date(Date.now() - 6 * 86400000).toISOString(),
-        dateUpdate: new Date(Date.now() - 1 * 86400000).toISOString()
+        adresse: 'Antananarivo',
+        photos: null,
+        user: {
+          id: 11,
+          email: 'test2@example.com',
+          nom: 'Test',
+          prenom: 'User',
+          telephone: null,
+          role: 'VISITEUR'
+        },
+        synced: false,
+        firebaseId: null,
+        createdAt: new Date(Date.now() - 6 * 86400000).toISOString(),
+        updatedAt: new Date(Date.now() - 1 * 86400000).toISOString(),
+        completedAt: null
       },
       {
         id: 3,
-        userId: 12,
-        nomUtilisateur: 'Test',
+        titre: 'Signalement (mock)',
+        description: 'Tranchée ouverte, signalisation insuffisante (mock)',
+        typeTravaux: 'SIGNALISATION',
+        statut: 'NOUVEAU',
         latitude: -18.8913,
         longitude: 47.5033,
-        description: 'Tranchée ouverte, signalisation insuffisante (mock)',
-        photoUrl: null,
-        statut: 'NOUVEAU',
-        surfaceM2: 5.2,
-        budget: 350000,
-        entreprise: 'Entreprise C',
-        dateCreation: new Date(Date.now() - 1 * 86400000).toISOString(),
-        dateUpdate: new Date(Date.now() - 1 * 86400000).toISOString()
-      },
-      {
-        id: 4,
-        userId: 13,
-        nomUtilisateur: 'Test',
-        latitude: -18.8668,
-        longitude: 47.4982,
-        description: 'Travaux terminés (mock)',
-        photoUrl: null,
-        statut: 'TERMINE',
-        surfaceM2: 20,
-        budget: 2500000,
-        entreprise: 'Entreprise D',
-        dateCreation: new Date(Date.now() - 20 * 86400000).toISOString(),
-        dateUpdate: new Date(Date.now() - 5 * 86400000).toISOString()
-      },
-      {
-        id: 5,
-        userId: 14,
-        nomUtilisateur: 'Test',
-        latitude: -18.8849,
-        longitude: 47.5221,
-        description: 'Bouchon et chaussée abîmée (mock)',
-        photoUrl: null,
-        statut: 'EN_COURS',
-        surfaceM2: 7.7,
-        budget: 900000,
-        entreprise: 'Entreprise E',
-        dateCreation: new Date(Date.now() - 9 * 86400000).toISOString(),
-        dateUpdate: new Date(Date.now() - 2 * 86400000).toISOString()
+        adresse: 'Antananarivo',
+        photos: null,
+        user: {
+          id: 12,
+          email: 'test3@example.com',
+          nom: 'Test',
+          prenom: 'User',
+          telephone: null,
+          role: 'VISITEUR'
+        },
+        synced: true,
+        firebaseId: 'mock123',
+        createdAt: new Date(Date.now() - 20 * 86400000).toISOString(),
+        updatedAt: new Date(Date.now() - 5 * 86400000).toISOString(),
+        completedAt: null
       }
     ];
   }

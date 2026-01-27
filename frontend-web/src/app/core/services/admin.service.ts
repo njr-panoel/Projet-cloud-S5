@@ -7,6 +7,6 @@ export class AdminService {
   private readonly api = inject(ApiService);
 
   unblockUser(userId: number) {
-    return this.api.post<void>(`/admin/unblock/${userId}`);
+    return this.api.post<void>(`/users/unlock/${userId}`);
   }
 }

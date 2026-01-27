@@ -13,6 +13,8 @@ public interface SyncLogRepository extends JpaRepository<SyncLog, Long> {
     List<SyncLog> findByEntityTypeAndEntityId(String entityType, Long entityId);
     
     List<SyncLog> findBySuccess(Boolean success);
+
+    List<SyncLog> findBySuccessOrderBySyncedAtDesc(Boolean success);
     
     List<SyncLog> findBySyncedAtBetween(LocalDateTime start, LocalDateTime end);
 }

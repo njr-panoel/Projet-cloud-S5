@@ -1,6 +1,7 @@
 package com.cloud.dev.controller;
 
 import com.cloud.dev.dto.response.ApiResponse;
+import com.cloud.dev.dto.response.SyncLogResponse;
 import com.cloud.dev.service.SyncService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @Tag(name = "Synchronisation", description = "Synchronisation Firebase / PostgreSQL")
@@ -43,5 +45,15 @@ public class SyncController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> getSyncStats() {
         Map<String, Object> stats = syncService.getSyncStats();
         return ResponseEntity.ok(ApiResponse.success(stats));
+    }
+
+    @Operation(summary = "Obtenir les logs de synchronisation")
+    @GetMapping("/logs")
+    @PreAuthorize("hasRole('MANAGER')")
+    public ResponseEntity<ApiResponse<List<SyncLogResponse>>> getSyncLogs(
+            @RequestParam(required = false) Boolean success,
+            @RequestParam(required = false) Integer limit) {
+        List<SyncLogResponse> logs = syncService.getSyncLogs(success, limit);
+        return ResponseEntity.ok(ApiResponse.success(logs));
     }
 }

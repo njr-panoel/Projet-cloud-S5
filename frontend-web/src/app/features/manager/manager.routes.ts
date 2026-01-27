@@ -22,6 +22,10 @@ export const MANAGER_ROUTES: Routes = [
       {
         path: 'utilisateurs',
         loadComponent: () => import('./pages/manager-users.page').then((m) => m.ManagerUsersPage)
+      },
+      {
+        path: 'sync',
+        loadComponent: () => import('./pages/manager-sync.page').then((m) => m.ManagerSyncPage)
       }
     ]
   }

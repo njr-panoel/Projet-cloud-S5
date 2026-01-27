@@ -83,9 +83,12 @@ import { PublicDataService } from '../services/public-data.service';
                     <div style="padding: 10px; border: 1px solid rgba(0,0,0,.08); border-radius: 12px;">
                       <div style="display:flex; justify-content: space-between; gap: 12px;">
                         <div style="font-weight: 700;">#{{ s.id }} - {{ s.statut }}</div>
-                        <div style="opacity: 0.75;">{{ s.dateCreation }}</div>
+                        <div style="opacity: 0.75;">{{ s.createdAt }}</div>
                       </div>
-                      <div style="margin-top: 4px;">{{ s.description }}</div>
+                      <div style="margin-top: 4px;">{{ s.titre }}</div>
+                      @if (s.description) {
+                        <div style="margin-top: 4px; opacity: 0.85;">{{ s.description }}</div>
+                      }
                     </div>
                   }
                 </div>
