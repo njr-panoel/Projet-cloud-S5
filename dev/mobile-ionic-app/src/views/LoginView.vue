@@ -6,6 +6,7 @@
       </ion-toolbar>
     </ion-header>
     <ion-content class="ion-padding">
+      <div style="color: green; margin-bottom: 8px; font-weight: bold;">Login view visible</div>
       <ion-card>
         <ion-card-content>
           <ion-item>
@@ -39,6 +40,8 @@ const router = useRouter();
 
 onMounted(() => {
   console.log('LoginView: Mounted');
+  const dbg = (window as any).debugLog;
+  if (dbg) dbg('LoginView mounted');
 });
 
 const showToast = async (msg: string) => {

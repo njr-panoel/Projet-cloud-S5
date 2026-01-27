@@ -1,6 +1,6 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHistory } from '@ionic/vue-router';
 import { IonicVue } from '@ionic/vue';
 import App from './App.vue';
 import routes from './router';
@@ -43,6 +43,8 @@ const debugLog = (msg: string) => {
   }
 };
 
+(window as any).debugLog = debugLog;
+
 // Global error handler to log JS errors to console
 window.addEventListener('error', (event) => {
   debugLog(`ERROR: ${event.message}`);
@@ -56,7 +58,7 @@ debugLog('=== App Boot Start ===');
 
 const pinia = createPinia();
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes
 });
 
