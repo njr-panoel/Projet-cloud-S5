@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { catchError, map, of, tap } from 'rxjs';
+import { catchError, map, of, tap, timeout } from 'rxjs';
 
 import { SignalementsService } from './signalements.service';
 import { LeafletService } from './leaflet.service';
@@ -30,11 +30,16 @@ export class MapService {
     this.map = L.map(container, {
       center: [-18.8792, 47.5079],
       zoom: 12,
-      zoomControl: true
+      zoomControl: true,
+      maxZoom: 19
     });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap'
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution: '© OpenStreetMap © CARTO',
+      subdomains: 'abcd',
+      maxZoom: 19,
+      maxNativeZoom: 19,
+      detectRetina: true
     }).addTo(this.map);
 
     this.markersLayer = L.layerGroup().addTo(this.map);
@@ -55,6 +60,10 @@ export class MapService {
     this.filtre = 'TOUS';
   }
 
+  invalidateSize() {
+    this.map?.invalidateSize();
+  }
+
   setFiltre(filtre: StatutFiltre) {
     this.filtre = filtre;
     this.render();
@@ -62,6 +71,7 @@ export class MapService {
 
   loadSignalements() {
     return this.signalementsService.list({ page: 0, size: 200 }).pipe(
+      timeout({ first: 2500 }),
       map((page) => page.content),
       catchError(() => of(this.getMockSignalements())),
       tap((signalements) => {
@@ -88,12 +98,11 @@ export class MapService {
     for (const s of list) {
       const color = this.getStatutColor(s.statut);
 
-      const marker = L.circleMarker([s.latitude, s.longitude], {
-        radius: 7,
-        color,
-        fillColor: color,
-        fillOpacity: 0.9,
-        weight: 2
+      const icon = this.buildPinIcon(L, color, this.normalizeStatut(s.statut));
+      const marker = L.marker([s.latitude, s.longitude], {
+        icon,
+        keyboard: false,
+        riseOnHover: true
       });
 
       marker.bindPopup(this.buildPopupHtml(s), {
@@ -106,6 +115,43 @@ export class MapService {
       marker.on('mouseout', () => marker.closePopup());
 
       marker.addTo(this.markersLayer);
+    }
+  }
+
+  private buildPinIcon(L: typeof import('leaflet'), color: string, statut: StatutFiltre) {
+    const html = this.buildPinSvg(color, statut);
+    const className = `ri-pin ri-pin--${statut.toLowerCase()}`;
+
+    return L.divIcon({
+      className,
+      html,
+      iconSize: [36, 46],
+      iconAnchor: [18, 46],
+      popupAnchor: [0, -40]
+    });
+  }
+
+  private buildPinSvg(color: string, statut: StatutFiltre) {
+    const symbol = this.getPinSymbolSvg(statut);
+
+    return `
+      <svg width="36" height="46" viewBox="0 0 36 46" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M18 0C10.3 0 4 6.3 4 14c0 10.5 14 32 14 32s14-21.5 14-32C32 6.3 25.7 0 18 0z" fill="${color}" />
+        <circle cx="18" cy="14" r="8.5" fill="#ffffff" />
+        ${symbol}
+      </svg>
+    `;
+  }
+
+  private getPinSymbolSvg(statut: StatutFiltre) {
+    switch (statut) {
+      case 'TERMINE':
+        return '<path d="M13.8 14.2l2.5 2.7 6-6.6" fill="none" stroke="#0f172a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />';
+      case 'EN_COURS':
+        return '<circle cx="18" cy="14" r="5" fill="none" stroke="#0f172a" stroke-width="2" /><path d="M18 11v3.6l2.3 1.7" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />';
+      case 'NOUVEAU':
+      default:
+        return '<path d="M18 9.2v7.2" stroke="#0f172a" stroke-width="2.4" stroke-linecap="round" /><circle cx="18" cy="19.5" r="1.3" fill="#0f172a" />';
     }
   }
 

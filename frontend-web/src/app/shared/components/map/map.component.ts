@@ -2,6 +2,8 @@ import { AfterViewInit, Component, DestroyRef, ElementRef, OnDestroy, inject, vi
 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
+import { debounceTime, fromEvent } from 'rxjs';
+
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 
@@ -28,7 +30,7 @@ import { MapService, StatutFiltre } from '../../../core/services/map.service';
           </mat-button-toggle-group>
         </div>
 
-        <div #map style="height: 520px; width: 100%; border-radius: 12px;"></div>
+        <div #map style="height: min(70vh, 640px); width: 100%; border-radius: 12px; position: relative; z-index: 1;"></div>
       </mat-card-content>
     </mat-card>
   `
@@ -36,6 +38,8 @@ import { MapService, StatutFiltre } from '../../../core/services/map.service';
 export class MapComponent implements AfterViewInit, OnDestroy {
   private readonly mapService = inject(MapService);
   private readonly destroyRef = inject(DestroyRef);
+
+  private resizeObserver: ResizeObserver | null = null;
 
   protected filtre: StatutFiltre = 'TOUS';
 
@@ -48,9 +52,25 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       .loadSignalements()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe();
+
+    setTimeout(() => {
+      this.mapService.invalidateSize();
+    }, 300);
+
+    fromEvent(window, 'resize')
+      .pipe(debounceTime(100), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.mapService.invalidateSize());
+
+    const el = this.mapEl().nativeElement;
+    if ('ResizeObserver' in window) {
+      this.resizeObserver = new ResizeObserver(() => this.mapService.invalidateSize());
+      this.resizeObserver.observe(el);
+    }
   }
 
   ngOnDestroy() {
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
     this.mapService.destroy();
   }
 
