@@ -64,6 +64,10 @@ export class MapService {
     this.map?.invalidateSize();
   }
 
+  flyTo(lat: number, lon: number, zoom = 15) {
+    this.map?.flyTo([lat, lon], zoom, { duration: 0.8 });
+  }
+
   setFiltre(filtre: StatutFiltre) {
     this.filtre = filtre;
     this.render();

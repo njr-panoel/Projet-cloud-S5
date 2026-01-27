@@ -81,8 +81,21 @@ body {
   font-weight: 700;
 }
 
+.app-public {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
 .app-content {
+  flex: 1 1 auto;
   padding: 20px;
+}
+
+.app-footer {
+  padding: 16px 20px;
+  color: rgba(15, 23, 42, 0.7);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 a.active {

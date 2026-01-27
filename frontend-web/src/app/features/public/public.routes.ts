@@ -9,11 +9,11 @@ export const PUBLIC_ROUTES: Routes = [
         path: '',
         pathMatch: 'full',
         loadComponent: () =>
-          import('./pages/public-dashboard.page').then((m) => m.PublicDashboardPage)
+          import('./pages/public-dashboard.page').then((m) => m.DashboardComponent)
       },
       {
         path: 'carte',
-        loadComponent: () => import('./pages/public-map.page').then((m) => m.PublicMapPage)
+        loadComponent: () => import('./pages/public-map.page').then((m) => m.MapViewComponent)
       }
     ]
   }
