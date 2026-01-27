@@ -1,0 +1,394 @@
+{
+  "info": {
+    "name": "Travaux Routiers API",
+    "description": "Collection Postman pour tester l'API de suivi des travaux routiers",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register - Visiteur",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"visiteur@test.com\",\n  \"password\": \"password123\",\n  \"nom\": \"Rakoto\",\n  \"prenom\": \"Jean\",\n  \"telephone\": \"034 12 345 67\",\n  \"role\": \"VISITEUR\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Register - Manager",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"manager@test.com\",\n  \"password\": \"password123\",\n  \"nom\": \"Razafi\",\n  \"prenom\": \"Marie\",\n  \"telephone\": \"034 98 765 43\",\n  \"role\": \"MANAGER\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login - Local",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('token', response.data.token);",
+                  "    console.log('Token saved:', response.data.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"manager@test.com\",\n  \"password\": \"password123\",\n  \"useFirebase\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Signalements",
+      "item": [
+        {
+          "name": "Create Signalement",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titre\": \"Nid de poule Avenue de l'Indépendance\",\n  \"description\": \"Important nid de poule dangereux pour les véhicules\",\n  \"typeTravaux\": \"NIDS_DE_POULE\",\n  \"latitude\": -18.8792,\n  \"longitude\": 47.5079,\n  \"adresse\": \"Avenue de l'Indépendance, Antananarivo\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/signalements",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "signalements"]
+            }
+          }
+        },
+        {
+          "name": "Get All Signalements",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/signalements",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "signalements"]
+            }
+          }
+        },
+        {
+          "name": "Get Signalement By ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/signalements/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "signalements", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get By Status - NOUVEAU",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/signalements/statut/NOUVEAU",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "signalements", "statut", "NOUVEAU"]
+            }
+          }
+        },
+        {
+          "name": "Get By Type - NIDS_DE_POULE",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/signalements/type/NIDS_DE_POULE",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "signalements", "type", "NIDS_DE_POULE"]
+            }
+          }
+        },
+        {
+          "name": "Update Signalement",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titre\": \"Nid de poule URGENT Avenue de l'Indépendance\",\n  \"description\": \"Nid de poule très dangereux - intervention urgente requise\",\n  \"statut\": \"EN_COURS\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/signalements/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "signalements", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/signalements/1/statut?statut=TERMINE",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "signalements", "1", "statut"],
+              "query": [
+                {
+                  "key": "statut",
+                  "value": "TERMINE"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "Get Locked Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/locked",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "locked"]
+            }
+          }
+        },
+        {
+          "name": "Unlock User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/unlock/2",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "unlock", "2"]
+            }
+          }
+        },
+        {
+          "name": "Update User Role",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/2/role?role=UTILISATEUR_MOBILE",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "2", "role"],
+              "query": [
+                {
+                  "key": "role",
+                  "value": "UTILISATEUR_MOBILE"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Synchronization",
+      "item": [
+        {
+          "name": "Sync to Firebase",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sync/to-firebase",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sync", "to-firebase"]
+            }
+          }
+        },
+        {
+          "name": "Sync from Firebase",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sync/from-firebase",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sync", "from-firebase"]
+            }
+          }
+        },
+        {
+          "name": "Get Sync Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sync/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sync", "stats"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
