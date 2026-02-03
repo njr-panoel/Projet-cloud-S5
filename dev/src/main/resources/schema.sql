@@ -140,3 +140,6 @@ ON CONFLICT DO NOTHING;
 -- SELECT * FROM signalements;
 -- SELECT * FROM sessions;
 -- SELECT * FROM sync_logs;
+
+
+UPDATE users SET role='MANAGER' WHERE email='fitia@gmail.com';

@@ -10,6 +10,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 
+import { AuthService } from '../../core/services/auth.service';
 import { ThemeService } from '../../core/services/theme.service';
 
 @Component({
@@ -35,6 +36,22 @@ import { ThemeService } from '../../core/services/theme.service';
             Tableau de bord
           </a>
           <a mat-button routerLink="/carte" routerLinkActive="active">Carte</a>
+          <a mat-button routerLink="/signalements" routerLinkActive="active">Signalements</a>
+
+          @if (canReport()) {
+            <a mat-button routerLink="/signaler" routerLinkActive="active">Signaler</a>
+          }
+
+          @if (isManager()) {
+            <a mat-button routerLink="/manager" routerLinkActive="active">Manager</a>
+          }
+
+          @if (!isAuthenticated()) {
+            <a mat-button routerLink="/auth/login" routerLinkActive="active">Connexion</a>
+            <a mat-button routerLink="/auth/register" routerLinkActive="active">Inscription</a>
+          } @else {
+            <button mat-button type="button" (click)="auth.logout()" aria-label="Se déconnecter">Déconnexion</button>
+          }
         } @else {
           <button mat-icon-button [matMenuTriggerFor]="menu" type="button" aria-label="Ouvrir le menu">
             <mat-icon aria-hidden="true">menu</mat-icon>
@@ -53,6 +70,40 @@ import { ThemeService } from '../../core/services/theme.service';
               <mat-icon aria-hidden="true">map</mat-icon>
               <span>Carte</span>
             </a>
+            <a mat-menu-item routerLink="/signalements" routerLinkActive="active">
+              <mat-icon aria-hidden="true">list</mat-icon>
+              <span>Signalements</span>
+            </a>
+
+            @if (canReport()) {
+              <a mat-menu-item routerLink="/signaler" routerLinkActive="active">
+                <mat-icon aria-hidden="true">add_location_alt</mat-icon>
+                <span>Signaler</span>
+              </a>
+            }
+
+            @if (isManager()) {
+              <a mat-menu-item routerLink="/manager" routerLinkActive="active">
+                <mat-icon aria-hidden="true">admin_panel_settings</mat-icon>
+                <span>Manager</span>
+              </a>
+            }
+
+            @if (!isAuthenticated()) {
+              <a mat-menu-item routerLink="/auth/login" routerLinkActive="active">
+                <mat-icon aria-hidden="true">login</mat-icon>
+                <span>Connexion</span>
+              </a>
+              <a mat-menu-item routerLink="/auth/register" routerLinkActive="active">
+                <mat-icon aria-hidden="true">person_add</mat-icon>
+                <span>Inscription</span>
+              </a>
+            } @else {
+              <button mat-menu-item type="button" (click)="auth.logout()" aria-label="Se déconnecter">
+                <mat-icon aria-hidden="true">logout</mat-icon>
+                <span>Déconnexion</span>
+              </button>
+            }
           </mat-menu>
         }
 
@@ -72,11 +123,25 @@ import { ThemeService } from '../../core/services/theme.service';
   `
 })
 export class PublicLayoutComponent {
+  protected readonly auth = inject(AuthService);
   protected readonly theme = inject(ThemeService);
   private readonly breakpointObserver = inject(BreakpointObserver);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly isMobile = signal(false);
+
+  protected isAuthenticated() {
+    return this.auth.isAuthenticated();
+  }
+
+  protected canReport() {
+    const role = this.auth.getRole();
+    return role === 'UTILISATEUR_MOBILE' || role === 'MANAGER';
+  }
+
+  protected isManager() {
+    return this.auth.isManager();
+  }
 
   constructor() {
     this.breakpointObserver

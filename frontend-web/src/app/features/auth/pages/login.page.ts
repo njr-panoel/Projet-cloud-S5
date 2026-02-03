@@ -124,11 +124,16 @@ export class LoginPage {
     this.auth.login({ email, password }, mode).subscribe({
       next: () => {
         this.loading = false;
-        if (this.auth.isManager()) {
+        const role = this.auth.getRole();
+        if (role === 'MANAGER') {
           this.router.navigateByUrl('/manager');
-        } else {
-          this.router.navigateByUrl('/');
+          return;
         }
+        if (role === 'UTILISATEUR_MOBILE') {
+          this.router.navigateByUrl('/signaler');
+          return;
+        }
+        this.router.navigateByUrl('/');
       },
       error: () => {
         this.loading = false;

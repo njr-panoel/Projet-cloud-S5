@@ -1,6 +1,7 @@
 import { AsyncPipe } from '@angular/common';
 import { Component, DestroyRef, inject } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, debounceTime, distinctUntilChanged, of, startWith, switchMap } from 'rxjs';
@@ -9,7 +10,9 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
+import { MatButtonModule } from '@angular/material/button';
 
+import { AuthService } from '../../../core/services/auth.service';
 import { MapService } from '../../../core/services/map.service';
 import { MapComponent } from '../../../shared/components/map/map.component';
 import { GeocodingService } from '../services/geocoding.service';
@@ -20,14 +23,26 @@ import { GeocodingService } from '../services/geocoding.service';
   imports: [
     AsyncPipe,
     ReactiveFormsModule,
+    RouterLink,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
     MatListModule,
+    MatButtonModule,
     MapComponent
   ],
   template: `
-    <h1>Carte des signalements</h1>
+    <div style="display:flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+      <h1 style="margin: 0;">Carte des signalements</h1>
+      <div style="display:flex; gap: 10px; flex-wrap: wrap;">
+        <a mat-stroked-button routerLink="/signalements">Liste</a>
+        @if (canReport()) {
+          <a mat-raised-button color="primary" routerLink="/signaler">Signaler</a>
+        } @else {
+          <a mat-raised-button color="primary" routerLink="/auth/login">Connexion</a>
+        }
+      </div>
+    </div>
 
     <mat-card style="margin-bottom: 12px;">
       <mat-card-content>
@@ -52,9 +67,15 @@ import { GeocodingService } from '../services/geocoding.service';
   `
 })
 export class MapViewComponent {
+  private readonly auth = inject(AuthService);
   private readonly geocoding = inject(GeocodingService);
   private readonly map = inject(MapService);
   private readonly destroyRef = inject(DestroyRef);
+
+  protected canReport() {
+    const role = this.auth.getRole();
+    return role === 'UTILISATEUR_MOBILE' || role === 'MANAGER';
+  }
 
   protected readonly query = new FormControl('', { nonNullable: true });
 

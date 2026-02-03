@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSelectModule } from '@angular/material/select';
 
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -19,6 +20,7 @@ import { AuthService } from '../../../core/services/auth.service';
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSelectModule,
     MatButtonModule,
     MatProgressSpinnerModule
   ],
@@ -62,6 +64,14 @@ import { AuthService } from '../../../core/services/auth.service';
           </mat-form-field>
 
           <mat-form-field appearance="outline" style="width: 100%">
+            <mat-label>Profil</mat-label>
+            <mat-select formControlName="role">
+              <mat-option value="VISITEUR">Visiteur (lecture seule)</mat-option>
+              <mat-option value="UTILISATEUR_MOBILE">Utilisateur (peut signaler)</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" style="width: 100%">
             <mat-label>Mot de passe</mat-label>
             <input matInput type="password" formControlName="password" autocomplete="new-password" />
             @if (form.controls.password.touched && form.controls.password.invalid) {
@@ -100,6 +110,7 @@ export class RegisterPage {
     prenom: ['', [Validators.required, Validators.minLength(2)]],
     email: ['', [Validators.required, Validators.email]],
     telephone: [''],
+    role: ['VISITEUR'],
     password: ['', [Validators.required, Validators.minLength(6)]]
   });
 
@@ -118,12 +129,17 @@ export class RegisterPage {
     const prenom = this.form.value.prenom ?? '';
     const email = this.form.value.email ?? '';
     const telephone = (this.form.value.telephone ?? '').trim();
+    const role = (this.form.value.role ?? 'VISITEUR') as 'VISITEUR' | 'UTILISATEUR_MOBILE';
     const password = this.form.value.password ?? '';
 
-    this.auth.register({ nom, prenom, email, password, telephone: telephone || null, role: 'VISITEUR' }).subscribe({
+    this.auth.register({ nom, prenom, email, password, telephone: telephone || null, role }).subscribe({
       next: () => {
         this.loading = false;
-        this.router.navigateByUrl('/');
+        if (role === 'UTILISATEUR_MOBILE') {
+          this.router.navigateByUrl('/signaler');
+        } else {
+          this.router.navigateByUrl('/');
+        }
       },
       error: () => {
         this.loading = false;
