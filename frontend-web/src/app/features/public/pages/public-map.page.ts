@@ -46,20 +46,22 @@ import { GeocodingService } from '../services/geocoding.service';
 
     <mat-card style="margin-bottom: 12px;">
       <mat-card-content>
-        <mat-form-field appearance="outline" style="width: 100%">
-          <mat-label>Rechercher une localisation</mat-label>
-          <input matInput [formControl]="query" placeholder="Ex: Analakely, Antananarivo" />
-        </mat-form-field>
+        <div style="width: 100%; max-width: 560px;">
+          <mat-form-field appearance="outline" style="width: 100%">
+            <mat-label>Rechercher une localisation</mat-label>
+            <input matInput [formControl]="query" placeholder="Ex: Analakely, Antananarivo" />
+          </mat-form-field>
 
-        @if (results$ | async; as results) {
-          @if (results.length > 0) {
-            <mat-nav-list>
-              @for (r of results; track r.label) {
-                <a mat-list-item (click)="select(r)">{{ r.label }}</a>
-              }
-            </mat-nav-list>
+          @if (results$ | async; as results) {
+            @if (results.length > 0) {
+              <mat-nav-list>
+                @for (r of results; track r.label) {
+                  <a mat-list-item (click)="select(r)">{{ r.label }}</a>
+                }
+              </mat-nav-list>
+            }
           }
-        }
+        </div>
       </mat-card-content>
     </mat-card>
 

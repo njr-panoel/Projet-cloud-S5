@@ -27,7 +27,7 @@ import { AuthService } from '../../../core/services/auth.service';
   template: `
     <h1>Connexion</h1>
 
-    <mat-card>
+    <mat-card style="width: 100%; max-width: 560px; margin: 0 auto;">
       <mat-card-content>
         <form [formGroup]="form" (ngSubmit)="submit()">
           <mat-form-field appearance="outline" style="width: 100%">
