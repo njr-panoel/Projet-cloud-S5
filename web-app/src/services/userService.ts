@@ -1,6 +1,6 @@
 import api from './api';
 import { config } from '../config';
-import type { User, ApiResponse, UserRole } from '../types';
+import type { User, ApiResponse, UserRole, CreateManagerRequest } from '../types';
 
 export const userService = {
   // Récupérer tous les utilisateurs (Manager uniquement)
@@ -56,5 +56,14 @@ export const userService = {
     if (!response.data.success) {
       throw new Error(response.data.message || 'Erreur lors de la suppression');
     }
+  },
+
+  // Créer un nouveau manager (Manager uniquement)
+  async createManager(data: CreateManagerRequest): Promise<User> {
+    const response = await api.post<ApiResponse<User>>(config.endpoints.users.createManager, data);
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Erreur lors de la création du manager');
+    }
+    return response.data.data;
   },
 };

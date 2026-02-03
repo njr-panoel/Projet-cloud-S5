@@ -2,7 +2,7 @@ import React from 'react';
 import { useForm, type FieldValues } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Modal, ModalFooter, Button, Input, Select } from '../../components/ui';
+import { X } from 'lucide-react';
 import { Toast } from '../../components/ui/Toast';
 import { useSignalementStore } from '../../stores/signalementStore';
 import type { Signalement, SignalementFormData, SignalementStatut } from '../../types';
@@ -15,8 +15,8 @@ const editSchema = z.object({
   adresse: z.string().optional(),
   latitude: z.coerce.number(),
   longitude: z.coerce.number(),
-  surfaceM2: z.coerce.number().min(0, 'Surface doit être positive').optional(),
-  budget: z.coerce.number().min(0, 'Budget doit être positif').optional(),
+  surfaceM2: z.coerce.number().min(0, 'Surface doit être positive').optional().nullable(),
+  budget: z.coerce.number().min(0, 'Budget doit être positif').optional().nullable(),
   entreprise: z.string().optional(),
 });
 
@@ -49,8 +49,8 @@ export const SignalementEditModal: React.FC<SignalementEditModalProps> = ({
       adresse: signalement.adresse || '',
       latitude: signalement.latitude,
       longitude: signalement.longitude,
-      surfaceM2: signalement.surfaceM2 || undefined,
-      budget: signalement.budget || undefined,
+      surfaceM2: signalement.surfaceM2 ?? null,
+      budget: signalement.budget ?? null,
       entreprise: signalement.entreprise || '',
     },
   });
@@ -73,8 +73,8 @@ export const SignalementEditModal: React.FC<SignalementEditModalProps> = ({
         adresse: formData.adresse,
         latitude: formData.latitude,
         longitude: formData.longitude,
-        surfaceM2: formData.surfaceM2,
-        budget: formData.budget,
+        surfaceM2: formData.surfaceM2 || undefined,
+        budget: formData.budget || undefined,
         entreprise: formData.entreprise,
       };
       
@@ -103,104 +103,169 @@ export const SignalementEditModal: React.FC<SignalementEditModalProps> = ({
     { value: 'AUTRE', label: 'Autre' },
   ];
 
+  if (!isOpen) return null;
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Modifier le signalement" size="lg">
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <Input
-          {...register('titre')}
-          label="Titre"
-          error={errors.titre?.message}
-        />
-
-        <div>
-          <label className="block text-sm font-medium text-secondary-700 mb-1.5">
-            Description
-          </label>
-          <textarea
-            {...register('description')}
-            className={`input min-h-[80px] resize-none ${errors.description ? 'input-error' : ''}`}
-          />
-          {errors.description && (
-            <p className="mt-1.5 text-sm text-danger-600">{errors.description.message}</p>
-          )}
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      
+      {/* Modal Content */}
+      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <h2 className="text-xl font-semibold text-gray-800">Modifier le signalement</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Select
-            {...register('statut')}
-            label="Statut"
-            options={statutOptions}
-            error={errors.statut?.message}
-          />
-          <Select
-            {...register('typeTravaux')}
-            label="Type de travaux"
-            options={typeOptions}
-            error={errors.typeTravaux?.message}
-          />
-        </div>
-
-        <Input
-          {...register('adresse')}
-          label="Adresse"
-          placeholder="Adresse du signalement"
-        />
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Input
-            {...register('latitude')}
-            type="number"
-            step="0.000001"
-            label="Latitude"
-          />
-          <Input
-            {...register('longitude')}
-            type="number"
-            step="0.000001"
-            label="Longitude"
-          />
-        </div>
-
-        {/* Champs supplémentaires pour le manager */}
-        <div className="border-t border-secondary-200 pt-4 mt-4">
-          <h4 className="text-sm font-semibold text-secondary-700 mb-3">Informations complémentaires</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input
-              {...register('surfaceM2')}
-              type="number"
-              step="0.01"
-              label="Surface (m²)"
-              placeholder="Ex: 150.5"
-              error={errors.surfaceM2?.message}
+        {/* Form */}
+        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-5">
+          {/* Titre */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Titre</label>
+            <input
+              {...register('titre')}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
             />
-            <Input
-              {...register('budget')}
-              type="number"
-              step="1000"
-              label="Budget (Ariary)"
-              placeholder="Ex: 5000000"
-              error={errors.budget?.message}
+            {errors.titre && (
+              <p className="mt-1 text-sm text-red-500">{errors.titre.message}</p>
+            )}
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
+            <textarea
+              {...register('description')}
+              rows={3}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition resize-none"
             />
           </div>
-          <div className="mt-4">
-            <Input
-              {...register('entreprise')}
-              label="Entreprise en charge"
-              placeholder="Nom de l'entreprise"
-              error={errors.entreprise?.message}
+
+          {/* Statut & Type de travaux - Side by side */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Statut</label>
+              <select
+                {...register('statut')}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition bg-white"
+              >
+                {statutOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Type de travaux</label>
+              <select
+                {...register('typeTravaux')}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition bg-white"
+              >
+                {typeOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Adresse */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Adresse</label>
+            <input
+              {...register('adresse')}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+              placeholder="Route Nationale 5, Antananarivo"
             />
           </div>
-        </div>
 
-        <ModalFooter>
-          <Button type="button" variant="ghost" onClick={onClose}>
-            Annuler
-          </Button>
-          <Button type="submit" isLoading={isLoading}>
-            Enregistrer
-          </Button>
-        </ModalFooter>
-      </form>
-    </Modal>
+          {/* Latitude & Longitude */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Latitude</label>
+              <input
+                {...register('latitude')}
+                type="number"
+                step="0.00001"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Longitude</label>
+              <input
+                {...register('longitude')}
+                type="number"
+                step="0.00001"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+              />
+            </div>
+          </div>
+
+          {/* Informations complémentaires */}
+          <div className="pt-4 border-t border-gray-200">
+            <h4 className="text-sm font-medium text-gray-700 mb-3">Informations complémentaires</h4>
+            
+            {/* Surface & Budget */}
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Surface (m²)</label>
+                <input
+                  {...register('surfaceM2')}
+                  type="number"
+                  step="0.1"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                  placeholder="Ex: 150.5"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Budget (Ariary)</label>
+                <input
+                  {...register('budget')}
+                  type="number"
+                  step="1000"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                  placeholder="Ex: 5000000"
+                />
+              </div>
+            </div>
+
+            {/* Entreprise */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Entreprise en charge</label>
+              <input
+                {...register('entreprise')}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                placeholder="Nom de l'entreprise"
+              />
+            </div>
+          </div>
+
+          {/* Footer Buttons */}
+          <div className="flex justify-end gap-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-2.5 text-gray-700 hover:bg-gray-100 rounded-lg transition font-medium"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Enregistrement...' : 'Enregistrer'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 };

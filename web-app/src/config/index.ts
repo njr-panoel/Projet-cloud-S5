@@ -25,6 +25,7 @@ export const config = {
       locked: `${API_URL}/users/locked`,
       unlock: (id: number) => `${API_URL}/users/unlock/${id}`,
       updateRole: (id: number) => `${API_URL}/users/${id}/role`,
+      createManager: `${API_URL}/users/manager`,
     },
     sync: {
       push: `${API_URL}/sync/push`,

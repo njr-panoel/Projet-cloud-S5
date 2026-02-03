@@ -6,6 +6,7 @@ import { VisiteurPage } from '../pages/visiteur/VisiteurPage';
 import { SignalementPage } from '../pages/utilisateur/SignalementPage';
 import { DashboardPage } from '../pages/manager/DashboardPage';
 import { UsersBlockedPage } from '../pages/manager/UsersBlockedPage';
+import { ManagersPage } from '../pages/manager/ManagersPage';
 
 // Page 403 - Unauthorized
 const UnauthorizedPage = () => (
@@ -77,6 +78,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['MANAGER']}>
             <UsersBlockedPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'managers',
+        element: (
+          <ProtectedRoute allowedRoles={['MANAGER']}>
+            <ManagersPage />
           </ProtectedRoute>
         ),
       },

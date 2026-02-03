@@ -106,6 +106,14 @@ export interface RegisterRequest {
   role?: UserRole;
 }
 
+export interface CreateManagerRequest {
+  email: string;
+  password: string;
+  nom: string;
+  prenom: string;
+  telephone?: string;
+}
+
 // Filter types
 export interface SignalementFilters {
   statut?: SignalementStatut | '';

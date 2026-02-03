@@ -4,7 +4,8 @@ import {
   Map, 
   FileText, 
   LayoutDashboard, 
-  Users, 
+  Users,
+  UserPlus,
   LogOut, 
   Menu, 
   X,
@@ -32,6 +33,12 @@ const navItems: NavItem[] = [
     path: '/dashboard', 
     label: 'Dashboard', 
     icon: <LayoutDashboard className="w-5 h-5" />,
+    roles: ['MANAGER']
+  },
+  { 
+    path: '/managers', 
+    label: 'Gérer Managers', 
+    icon: <UserPlus className="w-5 h-5" />,
     roles: ['MANAGER']
   },
   { 

@@ -11,6 +11,7 @@ import { Card, Button, Input, Select, Table, Badge, Modal, ModalFooter } from '.
 import { getStatutBadgeVariant, getStatutLabel, getTypeBadgeVariant, getTypeLabel } from '../../components/ui/Badge';
 import { Toast } from '../../components/ui/Toast';
 import { useSignalementStore } from '../../stores/signalementStore';
+import { syncService } from '../../services/syncService';
 import { SignalementEditModal } from './SignalementEditModal';
 import type { Signalement, SignalementFilters, SignalementStatut, TypeTravaux } from '../../types';
 
@@ -23,7 +24,6 @@ export const DashboardPage: React.FC = () => {
     setFilters,
     clearFilters,
     deleteSignalement,
-    stats
   } = useSignalementStore();
 
   // helper to get store (for inline stats cards above)
