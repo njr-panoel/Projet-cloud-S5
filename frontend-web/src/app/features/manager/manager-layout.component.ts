@@ -48,6 +48,10 @@ import { ThemeService } from '../../core/services/theme.service';
             <mat-icon matListItemIcon aria-hidden="true">report</mat-icon>
             <span matListItemTitle>Signalements</span>
           </a>
+          <a mat-list-item routerLink="/carte" routerLinkActive="active">
+            <mat-icon matListItemIcon aria-hidden="true">map</mat-icon>
+            <span matListItemTitle>Carte</span>
+          </a>
           <a mat-list-item routerLink="/manager/utilisateurs" routerLinkActive="active">
             <mat-icon matListItemIcon aria-hidden="true">group</mat-icon>
             <span matListItemTitle>Utilisateurs</span>
