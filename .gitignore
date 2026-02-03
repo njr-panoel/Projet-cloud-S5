@@ -1,3 +1,51 @@
+# =========================
+# Dependencies
+# =========================
+node_modules/
+.pnp/
+.pnp.js
+
+# =========================
+# Build outputs
+# =========================
+dist/
+build/
+target/
+*.class
+*.jar
+*.war
+
+# =========================
+# Mobile App (Ionic/Capacitor)
+# =========================
+mobile-app/node_modules/
+mobile-app/dist/
+mobile-app/.capacitor/
+mobile-app/android/app/build/
+mobile-app/android/.gradle/
+mobile-app/android/build/
+mobile-app/android/capacitor-cordova-android-plugins/build/
+mobile-app/android/local.properties
+mobile-app/ios/App/Pods/
+mobile-app/ios/App/App.xcworkspace/
+mobile-app/ios/App/build/
+
+# =========================
+# Java Backend
+# =========================
+dev/target/
+dev/.mvn/
+dev/*.log
+road-issues-backend/target/
+
+# =========================
+# IDE & Editors
+# =========================
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
 # ================================
 # Fichiers générés / Build outputs
 # ================================
@@ -51,6 +99,51 @@ dev/src/main/resources/firebase-service-account.json
 .classpath
 .settings/
 
+# =========================
+# Environment & Secrets
+# =========================
+.env
+.env.local
+.env.*.local
+*.env
+firebase-service-account.json
+**/firebase-service-account.json
+google-services.json
+**/google-services.json
+
+# =========================
+# Logs
+# =========================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =========================
+# OS Files
+# =========================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# =========================
+# Testing
+# =========================
+coverage/
+.nyc_output/
+
+# =========================
+# Misc
+# =========================
+*.tmp
+*.temp
+*.bak
+*.cache
 # ================================
 # Système d'exploitation
 # ================================
