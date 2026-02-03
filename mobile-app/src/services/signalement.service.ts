@@ -5,7 +5,6 @@ import {
   getDocs,
   updateDoc,
   doc,
-  serverTimestamp,
   query,
   where
 } from 'firebase/firestore';
@@ -63,6 +62,11 @@ export const signalementService = {
 
   async addOnline(userId: string, input: SignalementInput): Promise<void> {
     console.log('💾 Début sauvegarde signalement...');
+    console.log('👤 userId:', userId);
+    console.log('📍 latitude:', input.latitude, 'longitude:', input.longitude);
+    console.log('📝 description:', input.description);
+    console.log('🏷️ type:', input.type);
+    
     let photoUrl: string | null = null;
     
     // Upload photo si présente (optionnel, ne bloque pas)
@@ -78,21 +82,41 @@ export const signalementService = {
     }
     
     console.log('💾 Création document Firestore...');
-    await addDoc(collection(db, COLLECTION), {
-      userId,
-      latitude: input.latitude,
-      longitude: input.longitude,
-      type: input.type,
-      description: input.description,
-      photoUrl,
-      statut: 'nouveau', // Statut par défaut
-      surface_m2: null,
-      budget: null,
-      entreprise: null,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    });
-    console.log('✅ Signalement sauvegardé avec succès!');
+    try {
+      const now = Date.now();
+      const docData = {
+        userId,
+        latitude: input.latitude,
+        longitude: input.longitude,
+        type: input.type,
+        description: input.description,
+        photoUrl,
+        statut: 'nouveau',
+        surface_m2: null,
+        budget: null,
+        entreprise: null,
+        createdAt: now,
+        updatedAt: now
+      };
+      console.log('📄 Données à enregistrer:', docData);
+      
+      // Timeout de 15s sur l'appel Firestore
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Firestore timeout après 15s')), 15000)
+      );
+      
+      console.log('⏳ Appel addDoc...');
+      const docRef = await Promise.race([
+        addDoc(collection(db, COLLECTION), docData),
+        timeoutPromise
+      ]) as any;
+      console.log('✅ Signalement sauvegardé avec succès! ID:', docRef.id);
+    } catch (error: any) {
+      console.error('❌ Erreur Firestore:', error);
+      console.error('❌ Code:', error?.code);
+      console.error('❌ Message:', error?.message);
+      throw error;
+    }
   },
 
   async queueOffline(userId: string, input: SignalementInput): Promise<void> {

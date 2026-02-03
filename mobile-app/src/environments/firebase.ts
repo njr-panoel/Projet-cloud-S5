@@ -1,7 +1,7 @@
 // Replace with real keys when deploying
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
+import { initializeFirestore, memoryLocalCache } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 
@@ -18,11 +18,13 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
 
-enableIndexedDbPersistence(db).catch(() => {
-  // Persistence best-effort; silently continue if already enabled/unsupported
+// Firestore sans cache persistant
+const db = initializeFirestore(app, {
+  localCache: memoryLocalCache(),
+  experimentalForceLongPolling: true,
 });
+
+const storage = getStorage(app);
 
 export { app, auth, db, storage };
