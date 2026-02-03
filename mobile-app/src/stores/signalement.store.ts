@@ -39,13 +39,23 @@ export const useSignalementStore = defineStore('signalements', {
     async addSignalement(input: SignalementInput & { photo: any }) {
       const auth = useAuthStore();
       const net = useNetworkStore();
-      if (!auth.user) return;
+      if (!auth.user) {
+        console.error('❌ Utilisateur non connecté');
+        throw new Error('Vous devez être connecté pour ajouter un signalement');
+      }
+      
+      console.log('🚀 Ajout signalement, online:', net.online);
+      
       if (net.online) {
         await signalementService.addOnline(auth.user.uid, input);
       } else {
+        console.log('📴 Mode hors-ligne, mise en queue');
         await signalementService.queueOffline(auth.user.uid, input);
       }
+      
+      console.log('🔄 Rafraîchissement de la liste...');
       await this.refresh();
+      console.log('✅ Signalement ajouté et liste rafraîchie');
     },
     async centerOnUser() {
       const position = await geolocationService.currentPosition();

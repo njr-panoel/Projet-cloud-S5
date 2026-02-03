@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <ion-header>
     <ion-toolbar color="primary">
       <ion-title>Nouveau signalement</ion-title>
@@ -9,33 +9,28 @@
   </ion-header>
   <ion-content class="ion-padding">
     <ion-item>
-      <ion-label position="stacked">Description</ion-label>
-      <ion-textarea v-model="description" rows="3" />
-    </ion-item>
-    <ion-item>
-      <ion-label position="stacked">Statut</ion-label>
-      <ion-select v-model="statut" interface="popover">
-        <ion-select-option value="nouveau">Nouveau</ion-select-option>
-        <ion-select-option value="en_cours">En cours</ion-select-option>
-        <ion-select-option value="termine">Terminé</ion-select-option>
+      <ion-label position="stacked">Type de problème *</ion-label>
+      <ion-select v-model="type" interface="action-sheet" placeholder="Sélectionnez">
+        <ion-select-option value="nids_de_poule">Nids de poule</ion-select-option>
+        <ion-select-option value="fissure">Fissure</ion-select-option>
+        <ion-select-option value="affaissement">Affaissement</ion-select-option>
+        <ion-select-option value="inondation">Inondation</ion-select-option>
+        <ion-select-option value="obstacle">Obstacle sur la route</ion-select-option>
+        <ion-select-option value="autre">Autre</ion-select-option>
       </ion-select>
     </ion-item>
     <ion-item>
-      <ion-label position="stacked">Surface (m²)</ion-label>
-      <ion-input v-model.number="surface" type="number" />
-    </ion-item>
-    <ion-item>
-      <ion-label position="stacked">Budget (Ar)</ion-label>
-      <ion-input v-model.number="budget" type="number" />
-    </ion-item>
-    <ion-item>
-      <ion-label position="stacked">Entreprise</ion-label>
-      <ion-input v-model="entreprise" />
+      <ion-label position="stacked">Description *</ion-label>
+      <ion-textarea 
+        v-model="description" 
+        :rows="3" 
+        placeholder="Décrivez le problème..."
+      />
     </ion-item>
     <ion-item lines="none" class="ion-margin-top">
-      <ion-label>Photo</ion-label>
-      <ion-button fill="outline" @click="takePhoto">Caméra</ion-button>
-      <ion-button fill="clear" @click="pickPhoto">Galerie</ion-button>
+      <ion-label>Photo (optionnelle)</ion-label>
+      <ion-button fill="outline" size="small" @click="takePhoto">Caméra</ion-button>
+      <ion-button fill="clear" size="small" @click="pickPhoto">Galerie</ion-button>
     </ion-item>
     <div v-if="preview" class="preview">
       <img :src="preview" alt="prévisualisation" />
@@ -48,8 +43,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, nextTick } from 'vue';
 import {
+  
   IonHeader,
   IonToolbar,
   IonTitle,
@@ -72,11 +68,8 @@ const props = defineProps<{ latlng: { lat: number; lng: number } | null }>();
 
 const emit = defineEmits(['submitted', 'cancel']);
 
+const type = ref<'nids_de_poule' | 'fissure' | 'affaissement' | 'inondation' | 'obstacle' | 'autre'>('nids_de_poule');
 const description = ref('');
-const statut = ref<'nouveau' | 'en_cours' | 'termine'>('nouveau');
-const surface = ref<number | null>(null);
-const budget = ref<number | null>(null);
-const entreprise = ref<string | null>(null);
 const photo = ref<Photo | null>(null);
 const preview = computed(() => photo.value?.webPath ?? null);
 const saving = ref(false);
@@ -99,20 +92,34 @@ const pickPhoto = async () => {
 
 const submit = async () => {
   if (!props.latlng) return;
+  if (!type.value || !description.value.trim()) {
+    alert('Veuillez remplir tous les champs obligatoires');
+    return;
+  }
+  
+  await nextTick();
   saving.value = true;
-  await signalements.addSignalement({
-    latitude: props.latlng.lat,
-    longitude: props.latlng.lng,
-    description: description.value,
-    statut: statut.value,
-    surface_m2: surface.value,
-    budget: budget.value,
-    entreprise: entreprise.value,
-    photo
-  });
-  saving.value = false;
-  emit('submitted');
+  
+  try {
+    await signalements.addSignalement({
+      latitude: props.latlng.lat,
+      longitude: props.latlng.lng,
+      type: type.value,
+      description: description.value.trim(),
+      photo: photo.value
+    });
+    
+    await nextTick();
+    saving.value = false;
+    emit('submitted');
+  } catch (error) {
+    console.error('❌ Erreur lors de la sauvegarde:', error);
+    await nextTick();
+    saving.value = false;
+    alert('Erreur lors de la sauvegarde. Veuillez réessayer.');
+  }
 };
+
 </script>
 
 <style scoped>
@@ -129,3 +136,7 @@ ion-content { --padding-start: 12px; --padding-end: 12px; }
 ion-item { margin-top: 6px; }
 ion-button { border-radius: 8px; }
 </style>
+
+
+
+

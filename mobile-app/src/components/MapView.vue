@@ -1,11 +1,10 @@
 <template>
   <div class="map-wrapper">
     <l-map
-      ref="mapRef"
       :zoom="zoom"
       :center="center"
-      use-global-leaflet
       @ready="onReady"
+      @click="onMapClick"
     >
       <l-tile-layer :url="tileUrl" :attribution="attribution" />
       <l-marker
@@ -17,10 +16,11 @@
         <l-popup>
           <div>
             <strong>{{ item.description }}</strong>
+            <div v-if="item.type">Type: {{ getTypeLabel(item.type) }}</div>
             <div>Statut: {{ item.statut }}</div>
-            <div>Surface: {{ item.surface_m2 ?? 'N/A' }} m²</div>
-            <div>Budget: {{ item.budget ?? 'N/A' }} Ar</div>
-            <div>Maj: {{ new Date(item.updatedAt).toLocaleString() }}</div>
+            <div v-if="item.surface_m2">Surface: {{ item.surface_m2 }} m²</div>
+            <div v-if="item.budget">Budget: {{ item.budget }} Ar</div>
+            <div>Créé: {{ new Date(item.createdAt).toLocaleDateString() }}</div>
           </div>
         </l-popup>
       </l-marker>
@@ -34,12 +34,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, onUnmounted } from 'vue';
 import { IonFab, IonFabButton, IonIcon } from '@ionic/vue';
 import { locateOutline } from 'ionicons/icons';
 import { LMap, LTileLayer, LMarker, LPopup } from '@vue-leaflet/vue-leaflet';
 import { icon, Map as LeafletMap } from 'leaflet';
-import { Signalement } from '../models/signalement.model';
+import { Signalement, TYPE_PROBLEME_LABELS } from '../models/signalement.model';
 
 const props = defineProps<{ signalements: Signalement[]; loading: boolean; center?: [number, number] }>();
 const emit = defineEmits(['long-press', 'my-location']);
@@ -49,7 +49,6 @@ const zoom = ref(13);
 const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 const attribution = '&copy; OpenStreetMap contributors';
 const locIcon = locateOutline;
-const mapRef = ref<InstanceType<typeof LMap> | null>(null);
 let leafletMap: LeafletMap | null = null;
 let pressTimeout: number | null = null;
 
@@ -64,38 +63,76 @@ watch(
 );
 
 const onReady = (event: any) => {
-  // vue-leaflet may pass different shapes: the map itself, or { map }, or an event with target
-  console.debug('Map ready event', event);
+  console.log('🗺️ Map ready event', event);
   leafletMap = event?.map ?? event?.target ?? event ?? null;
   if (!leafletMap) {
-    console.error('Leaflet map instance not found on ready event', event);
+    console.error('❌ Leaflet map instance not found on ready event', event);
     return;
   }
+  console.log('✅ Leaflet map instance ready');
+  
   if (typeof leafletMap.on === 'function') {
-    leafletMap.on('mousedown', onMouseDown);
+    // Clic droit = ouverture formulaire
+    leafletMap.on('contextmenu', onContextMenu);
+    console.log('✅ Event contextmenu registered');
+    
+    // Appui long pour mobile
+    leafletMap.on('mousedown', onPressStart);
+    leafletMap.on('touchstart', onPressStart);
     leafletMap.on('mouseup', clearPress);
+    leafletMap.on('touchend', clearPress);
     leafletMap.on('dragstart', clearPress);
+    leafletMap.on('mousemove', clearPress);
+    leafletMap.on('touchmove', clearPress);
+    console.log('✅ Touch events registered');
   } else {
-    console.warn('Leaflet map instance does not expose .on()', leafletMap);
+    console.warn('⚠️ Leaflet map instance does not expose .on()', leafletMap);
   }
   if (props.center && typeof leafletMap.setView === 'function') {
     leafletMap.setView(props.center, zoom.value);
   }
 };
 
-const onMouseDown = (e: any) => {
+const onMapClick = (e: any) => {
+  console.log('🖱️ Map clicked', e);
+};
+
+const onContextMenu = (e: any) => {
+  console.log('📍 Context menu triggered', e.latlng);
+  e.originalEvent?.preventDefault();
+  emit('long-press', e.latlng);
+};
+
+const onPressStart = (e: any) => {
+  console.log('👇 Press started', e.latlng);
   clearPress();
   pressTimeout = window.setTimeout(() => {
+    console.log('⏱️ Long press detected!', e.latlng);
     emit('long-press', e.latlng);
-  }, 600);
+  }, 800);
 };
 
 const clearPress = () => {
   if (pressTimeout) {
+    console.log('❌ Press cancelled');
     window.clearTimeout(pressTimeout);
     pressTimeout = null;
   }
 };
+
+onUnmounted(() => {
+  if (leafletMap && typeof leafletMap.off === 'function') {
+    leafletMap.off('contextmenu', onContextMenu);
+    leafletMap.off('mousedown', onPressStart);
+    leafletMap.off('touchstart', onPressStart);
+    leafletMap.off('mouseup', clearPress);
+    leafletMap.off('touchend', clearPress);
+    leafletMap.off('dragstart', clearPress);
+    leafletMap.off('mousemove', clearPress);
+    leafletMap.off('touchmove', clearPress);
+  }
+  leafletMap = null;
+});
 
 const iconByStatus = (statut: string) => {
   const color = statut === 'termine' ? 'green' : statut === 'en_cours' ? 'orange' : 'red';
@@ -105,6 +142,10 @@ const iconByStatus = (statut: string) => {
     iconAnchor: [15, 45],
     popupAnchor: [0, -40]
   });
+};
+
+const getTypeLabel = (type: string) => {
+  return TYPE_PROBLEME_LABELS[type as keyof typeof TYPE_PROBLEME_LABELS] || type;
 };
 </script>
 

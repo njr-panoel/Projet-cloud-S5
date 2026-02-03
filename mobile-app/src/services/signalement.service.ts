@@ -24,6 +24,7 @@ function mapDoc(d: any): Signalement {
     latitude: data.latitude,
     longitude: data.longitude,
     description: data.description,
+      type: data.type || 'autre',
     photoUrl: data.photoUrl ?? null,
     statut: data.statut,
     surface_m2: data.surface_m2 ?? null,
@@ -61,23 +62,37 @@ export const signalementService = {
   },
 
   async addOnline(userId: string, input: SignalementInput): Promise<void> {
+    console.log('💾 Début sauvegarde signalement...');
     let photoUrl: string | null = null;
+    
+    // Upload photo si présente (optionnel, ne bloque pas)
     if (input.photo) {
-      photoUrl = await storageService.uploadSignalementPhoto(userId, input.photo);
+      try {
+        console.log('📸 Upload photo...');
+        photoUrl = await storageService.uploadSignalementPhoto(userId, input.photo);
+        console.log('✅ Photo uploadée:', photoUrl);
+      } catch (error) {
+        console.warn('⚠️ Erreur upload photo, continue sans photo:', error);
+        // Continue même si l'upload photo échoue
+      }
     }
+    
+    console.log('💾 Création document Firestore...');
     await addDoc(collection(db, COLLECTION), {
       userId,
       latitude: input.latitude,
       longitude: input.longitude,
+      type: input.type,
       description: input.description,
       photoUrl,
-      statut: input.statut,
-      surface_m2: input.surface_m2,
-      budget: input.budget,
-      entreprise: input.entreprise,
+      statut: 'nouveau', // Statut par défaut
+      surface_m2: null,
+      budget: null,
+      entreprise: null,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     });
+    console.log('✅ Signalement sauvegardé avec succès!');
   },
 
   async queueOffline(userId: string, input: SignalementInput): Promise<void> {
