@@ -22,8 +22,12 @@ export const DashboardPage: React.FC = () => {
     filters,
     setFilters,
     clearFilters,
-    deleteSignalement 
+    deleteSignalement,
+    stats
   } = useSignalementStore();
+
+  // helper to get store (for inline stats cards above)
+  const get = useSignalementStore.getState;
 
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -57,13 +61,26 @@ export const DashboardPage: React.FC = () => {
     clearFilters();
   };
 
-  const handleSync = async () => {
+  const handleSyncFromFirebase = async () => {
     setIsSyncing(true);
     try {
+      await syncService.syncFromFirebase();
       await fetchSignalements();
-      Toast.success('Synchronisation réussie !');
+      Toast.success('Synchronisation depuis Firebase réussie !');
     } catch (error) {
-      Toast.error('Erreur lors de la synchronisation');
+      Toast.error('Erreur lors de la synchronisation depuis Firebase');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleSyncToFirebase = async () => {
+    setIsSyncing(true);
+    try {
+      await syncService.syncToFirebase();
+      Toast.success('Synchronisation vers Firebase réussie !');
+    } catch (error) {
+      Toast.error('Erreur lors de la synchronisation vers Firebase');
     } finally {
       setIsSyncing(false);
     }
@@ -189,14 +206,23 @@ export const DashboardPage: React.FC = () => {
               <h1 className="text-2xl font-bold text-secondary-800">Dashboard Manager</h1>
               <p className="text-secondary-500 text-sm">Gestion des signalements</p>
             </div>
-            <Button
-              variant="primary"
-              onClick={handleSync}
-              isLoading={isSyncing}
-              leftIcon={<RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />}
-            >
-              Synchroniser
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={handleSyncFromFirebase}
+                isLoading={isSyncing}
+                leftIcon={<RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />}
+              >
+                Récupérer (from Firebase)
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleSyncToFirebase}
+                isLoading={isSyncing}
+              >
+                Envoyer (to Firebase)
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -204,6 +230,26 @@ export const DashboardPage: React.FC = () => {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Card>
+          {/* Stats cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
+            <div className="p-4 bg-white rounded-lg shadow-sm">
+              <div className="text-sm text-secondary-500">Nombre de signalements</div>
+              <div className="text-2xl font-bold text-secondary-800">{get().stats?.totalSignalements ?? 0}</div>
+            </div>
+            <div className="p-4 bg-white rounded-lg shadow-sm">
+              <div className="text-sm text-secondary-500">Surface totale (m²)</div>
+              <div className="text-2xl font-bold text-secondary-800">{get().stats?.totalSurface ?? 0}</div>
+            </div>
+            <div className="p-4 bg-white rounded-lg shadow-sm">
+              <div className="text-sm text-secondary-500">Avancement</div>
+              <div className="text-2xl font-bold text-secondary-800">{get().stats?.pourcentageTermine ?? 0}%</div>
+            </div>
+            <div className="p-4 bg-white rounded-lg shadow-sm">
+              <div className="text-sm text-secondary-500">Budget total</div>
+              <div className="text-2xl font-bold text-secondary-800">{(get().stats?.totalBudget ?? 0).toLocaleString()} Ar</div>
+            </div>
+          </div>
+
           {/* Search & Filters Bar */}
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <div className="flex-1 flex gap-2">
