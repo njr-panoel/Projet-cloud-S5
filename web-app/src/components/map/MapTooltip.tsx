@@ -86,7 +86,7 @@ export const MapTooltip: React.FC<MapTooltipProps> = ({ signalement }) => {
         )}
       </div>
 
-      {signalement.photos && (
+      {signalement.photos ? (
         <div className="mt-3 pt-2 border-t border-secondary-100">
           <p className="text-xs text-secondary-500 mb-2 font-medium">📷 Photo de la route concernée :</p>
           <a 
@@ -101,11 +101,25 @@ export const MapTooltip: React.FC<MapTooltipProps> = ({ signalement }) => {
               className="w-full h-24 object-cover rounded hover:opacity-80 transition-opacity cursor-pointer"
             />
           </a>
+          <a 
+            href={signalement.photos.split(',')[0]} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="block mt-2 text-center text-xs text-primary-600 hover:text-primary-800 font-medium underline"
+          >
+            🔗 Voir la photo en grand
+          </a>
           {signalement.photos.split(',').length > 1 && (
-            <p className="text-xs text-primary-600 mt-1 text-center">
+            <p className="text-xs text-secondary-500 mt-1 text-center">
               + {signalement.photos.split(',').length - 1} autre(s) photo(s)
             </p>
           )}
+        </div>
+      ) : (
+        <div className="mt-3 pt-2 border-t border-secondary-100">
+          <p className="text-xs text-secondary-400 text-center italic">
+            📷 Aucune photo disponible
+          </p>
         </div>
       )}
     </div>
