@@ -18,7 +18,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-// Custom marker icons by status
+// Custom marker icons by status (keep fallback to color markers)
 const createIcon = (color: string) =>
   new L.Icon({
     iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
@@ -34,6 +34,15 @@ const statusIcons: Record<string, L.Icon> = {
   EN_COURS: createIcon('blue'),
   TERMINE: createIcon('green'),
   ANNULE: createIcon('red'),
+};
+
+// Icons by type (SVG in public/assets/icons)
+const typeIcons: Record<string, L.Icon> = {
+  NIDS_DE_POULE: new L.Icon({ iconUrl: '/assets/icons/pothole.svg', iconSize: [36, 36], iconAnchor: [18, 36], popupAnchor: [0, -30] }),
+  FISSURE: new L.Icon({ iconUrl: '/assets/icons/crack.svg', iconSize: [36, 36], iconAnchor: [18, 36], popupAnchor: [0, -30] }),
+  EAU: new L.Icon({ iconUrl: '/assets/icons/water.svg', iconSize: [36, 36], iconAnchor: [18, 36], popupAnchor: [0, -30] }),
+  TERMINE: new L.Icon({ iconUrl: '/assets/icons/check.svg', iconSize: [36, 36], iconAnchor: [18, 36], popupAnchor: [0, -30] }),
+  DEFAULT: new L.Icon({ iconUrl: '/assets/icons/default.svg', iconSize: [34, 34], iconAnchor: [17, 34], popupAnchor: [0, -26] }),
 };
 
 interface MapComponentProps {
@@ -79,20 +88,38 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         {onMapClick && <MapClickHandler onClick={onMapClick} />}
 
         {/* Signalements markers */}
-        {signalements.map((signalement) => (
-          <Marker
-            key={signalement.id}
-            position={[signalement.latitude, signalement.longitude]}
-            icon={statusIcons[signalement.statut]}
-            eventHandlers={{
-              click: () => onMarkerClick?.(signalement),
-            }}
-          >
-            <Popup>
-              <MapTooltip signalement={signalement} />
-            </Popup>
-          </Marker>
-        ))}
+        {signalements.map((signalement) => {
+          const iconByType = typeIcons[signalement.typeTravaux] || typeIcons.DEFAULT;
+          const hoverContent = (
+            <div style={{ minWidth: 200 }}>
+              <strong>{signalement.titre}</strong>
+              <div style={{ fontSize: 12, color: '#4b5563' }}>
+                {new Date(signalement.createdAt).toLocaleDateString()} — {signalement.statut}
+                <div>
+                  Surface: {signalement.surfaceM2 ?? '—'} m² — Budget: {signalement.budget ?? '—'}
+                </div>
+              </div>
+            </div>
+          );
+
+          return (
+            <Marker
+              key={signalement.id}
+              position={[signalement.latitude, signalement.longitude]}
+              icon={iconByType}
+              eventHandlers={{
+                click: () => onMarkerClick?.(signalement),
+              }}
+            >
+              <Tooltip direction="top" offset={[0, -10]} opacity={0.95} sticky>
+                {hoverContent}
+              </Tooltip>
+              <Popup>
+                <MapTooltip signalement={signalement} />
+              </Popup>
+            </Marker>
+          );
+        })}
 
         {/* Selected position marker */}
         {selectedPosition && (
