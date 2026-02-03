@@ -90,14 +90,93 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         {/* Signalements markers */}
         {signalements.map((signalement) => {
           const iconByType = typeIcons[signalement.typeTravaux] || typeIcons.DEFAULT;
+          
+          // Labels et couleurs pour le statut
+          const statutLabel: Record<string, string> = {
+            'NOUVEAU': 'Nouveau',
+            'EN_COURS': 'En cours',
+            'TERMINE': 'Terminé',
+            'ANNULE': 'Annulé',
+          };
+          const statutColor: Record<string, string> = {
+            'NOUVEAU': '#f59e0b',
+            'EN_COURS': '#3b82f6',
+            'TERMINE': '#22c55e',
+            'ANNULE': '#ef4444',
+          };
+          
+          // Formater le budget
+          const formatBudget = (budget: number): string => {
+            if (budget >= 1000000) return `${(budget / 1000000).toFixed(1)} M Ar`;
+            if (budget >= 1000) return `${(budget / 1000).toFixed(0)} K Ar`;
+            return `${budget.toLocaleString()} Ar`;
+          };
+
+          // Contenu du tooltip au survol
           const hoverContent = (
-            <div style={{ minWidth: 200 }}>
-              <strong>{signalement.titre}</strong>
-              <div style={{ fontSize: 12, color: '#4b5563' }}>
-                {new Date(signalement.createdAt).toLocaleDateString()} — {signalement.statut}
-                <div>
-                  Surface: {signalement.surfaceM2 ?? '—'} m² — Budget: {signalement.budget ?? '—'}
+            <div style={{ minWidth: 280, maxWidth: 320, padding: 4 }}>
+              {/* Titre */}
+              <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 8, color: '#1f2937' }}>
+                {signalement.titre}
+              </div>
+              
+              {/* Date et Statut */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <span style={{ fontSize: 12, color: '#6b7280' }}>
+                  📅 {new Date(signalement.createdAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                </span>
+                <span style={{ 
+                  fontSize: 11, 
+                  fontWeight: 600, 
+                  padding: '2px 8px', 
+                  borderRadius: 9999, 
+                  backgroundColor: `${statutColor[signalement.statut]}20`,
+                  color: statutColor[signalement.statut]
+                }}>
+                  {statutLabel[signalement.statut]}
+                </span>
+              </div>
+
+              {/* Infos détaillées */}
+              <div style={{ fontSize: 12, color: '#4b5563', borderTop: '1px solid #e5e7eb', paddingTop: 8 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                  {/* Surface */}
+                  <div style={{ backgroundColor: '#f3f4f6', padding: '6px 8px', borderRadius: 6 }}>
+                    <div style={{ fontSize: 10, color: '#9ca3af' }}>Surface</div>
+                    <div style={{ fontWeight: 600, color: '#374151' }}>
+                      {signalement.surfaceM2 ? `${signalement.surfaceM2.toLocaleString()} m²` : '—'}
+                    </div>
+                  </div>
+                  
+                  {/* Budget */}
+                  <div style={{ backgroundColor: '#f3f4f6', padding: '6px 8px', borderRadius: 6 }}>
+                    <div style={{ fontSize: 10, color: '#9ca3af' }}>Budget</div>
+                    <div style={{ fontWeight: 600, color: '#374151' }}>
+                      {signalement.budget ? formatBudget(signalement.budget) : '—'}
+                    </div>
+                  </div>
                 </div>
+
+                {/* Entreprise */}
+                {signalement.entreprise && (
+                  <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span>🏢</span>
+                    <span style={{ fontWeight: 500 }}>{signalement.entreprise}</span>
+                  </div>
+                )}
+
+                {/* Lien Photos */}
+                {signalement.photos && (
+                  <div style={{ marginTop: 8, textAlign: 'center' }}>
+                    <span style={{ 
+                      fontSize: 11, 
+                      color: '#6366f1', 
+                      fontWeight: 500
+                    }}>
+                      📷 Cliquez pour voir les photos de la route
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           );

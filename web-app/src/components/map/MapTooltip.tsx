@@ -88,11 +88,24 @@ export const MapTooltip: React.FC<MapTooltipProps> = ({ signalement }) => {
 
       {signalement.photos && (
         <div className="mt-3 pt-2 border-t border-secondary-100">
-          <img
-            src={signalement.photos.split(',')[0]}
-            alt={signalement.titre}
-            className="w-full h-24 object-cover rounded"
-          />
+          <p className="text-xs text-secondary-500 mb-2 font-medium">📷 Photo de la route concernée :</p>
+          <a 
+            href={signalement.photos.split(',')[0]} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="block"
+          >
+            <img
+              src={signalement.photos.split(',')[0]}
+              alt={signalement.titre}
+              className="w-full h-24 object-cover rounded hover:opacity-80 transition-opacity cursor-pointer"
+            />
+          </a>
+          {signalement.photos.split(',').length > 1 && (
+            <p className="text-xs text-primary-600 mt-1 text-center">
+              + {signalement.photos.split(',').length - 1} autre(s) photo(s)
+            </p>
+          )}
         </div>
       )}
     </div>
