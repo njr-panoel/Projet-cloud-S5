@@ -1,0 +1,6 @@
+{
+  "name": "road-issues-mobile",
+  "integrations": {
+    "capacitor": {}
+  }
+}

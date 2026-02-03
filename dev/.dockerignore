@@ -1,0 +1,30 @@
+# Fichiers compilés
+target/
+*.class
+*.jar
+*.war
+*.ear
+
+# Logs
+logs/
+*.log
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Firebase credentials (IMPORTANT!)
+firebase-service-account.json
+*-firebase-adminsdk-*.json
+
+# Environment
+.env
+.env.local
