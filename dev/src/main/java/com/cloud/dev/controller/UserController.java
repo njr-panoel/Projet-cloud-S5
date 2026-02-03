@@ -1,5 +1,6 @@
 package com.cloud.dev.controller;
 
+import com.cloud.dev.dto.request.CreateManagerRequest;
 import com.cloud.dev.dto.response.ApiResponse;
 import com.cloud.dev.dto.response.UserResponse;
 import com.cloud.dev.enums.Role;
@@ -7,7 +8,9 @@ import com.cloud.dev.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -78,5 +81,15 @@ public class UserController {
     public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.ok(ApiResponse.success("Utilisateur supprimé avec succès", null));
+    }
+    
+    @Operation(summary = "Créer un nouveau manager (Manager uniquement)")
+    @PostMapping("/manager")
+    @PreAuthorize("hasRole('MANAGER')")
+    public ResponseEntity<ApiResponse<UserResponse>> createManager(
+            @Valid @RequestBody CreateManagerRequest request) {
+        UserResponse user = userService.createManager(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Manager créé avec succès", user));
     }
 }

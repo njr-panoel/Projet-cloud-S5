@@ -33,5 +33,11 @@ public class SignalementRequest {
     
     private String photos;  // URLs séparées par virgules
     
+    private Double surfaceM2;  // Surface en m²
+    
+    private Double budget;     // Budget estimé en Ariary
+    
+    private String entreprise; // Entreprise concernée
+    
     private String firebaseId;  // Pour synchronisation
 }

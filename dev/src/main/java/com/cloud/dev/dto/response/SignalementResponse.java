@@ -23,6 +23,9 @@ public class SignalementResponse {
     private Double longitude;
     private String adresse;
     private String photos;
+    private Double surfaceM2;
+    private Double budget;
+    private String entreprise;
     private UserResponse user;
     private Boolean synced;
     private String firebaseId;

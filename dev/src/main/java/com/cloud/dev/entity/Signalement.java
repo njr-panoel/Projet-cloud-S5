@@ -53,6 +53,13 @@ public class Signalement {
     @Column(length = 1000)
     private String photos;
     
+    // Informations complémentaires pour le manager
+    private Double surfaceM2;  // Surface en m²
+    
+    private Double budget;     // Budget estimé en Ariary
+    
+    private String entreprise; // Entreprise concernée
+    
     // Utilisateur ayant créé le signalement
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

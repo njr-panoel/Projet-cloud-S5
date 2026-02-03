@@ -1,16 +1,19 @@
 package com.cloud.dev.service;
 
+import com.cloud.dev.dto.request.CreateManagerRequest;
 import com.cloud.dev.dto.response.UserResponse;
 import com.cloud.dev.entity.User;
+import com.cloud.dev.enums.AuthProvider;
 import com.cloud.dev.enums.Role;
 import com.cloud.dev.exception.ResourceNotFoundException;
+import com.cloud.dev.exception.UserAlreadyExistsException;
 import com.cloud.dev.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,6 +23,7 @@ import java.util.stream.Collectors;
 public class UserService {
     
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
     
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll().stream()
@@ -85,6 +89,31 @@ public class UserService {
         
         userRepository.delete(user);
         log.info("Utilisateur supprimé: {}", user.getEmail());
+    }
+    
+    @Transactional
+    public UserResponse createManager(CreateManagerRequest request) {
+        // Vérifier si l'email existe déjà
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new UserAlreadyExistsException("Un utilisateur avec cet email existe déjà");
+        }
+        
+        User user = new User();
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setNom(request.getNom());
+        user.setPrenom(request.getPrenom());
+        user.setTelephone(request.getTelephone());
+        user.setRole(Role.MANAGER);
+        user.setAuthProvider(AuthProvider.LOCAL);
+        user.setActive(true);
+        user.setAccountLocked(false);
+        user.setLoginAttempts(0);
+        
+        user = userRepository.save(user);
+        log.info("Nouveau manager créé: {}", user.getEmail());
+        
+        return mapToResponse(user);
     }
     
     @Transactional

@@ -46,6 +46,52 @@ road-issues-backend/target/
 *.ipr
 *.iws
 .vscode/
+# ================================
+# Fichiers générés / Build outputs
+# ================================
+
+# Java / Maven
+dev/target/
+*.jar
+*.war
+*.class
+*.log
+
+# Node.js
+node_modules/
+dist/
+build/
+.cache/
+
+# Ionic / Capacitor
+dev/mobile-ionic-app/node_modules/
+dev/mobile-ionic-app/dist/
+dev/mobile-ionic-app/www/
+dev/mobile-ionic-app/android/
+dev/mobile-ionic-app/ios/
+dev/mobile-ionic-app/.angular/
+
+# React / Vite
+web-app/node_modules/
+web-app/dist/
+web-app/.vite/
+
+# ================================
+# Fichiers d'environnement / Secrets
+# ================================
+.env
+.env.local
+.env.*.local
+*.env
+firebase-service-account.json
+dev/src/main/resources/firebase-service-account.json
+
+# ================================
+# IDE / Editeurs
+# ================================
+.idea/
+.vscode/
+*.iml
 *.swp
 *.swo
 *~
@@ -98,4 +144,45 @@ coverage/
 *.temp
 *.bak
 *.cache
+# ================================
+# Système d'exploitation
+# ================================
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ================================
+# Fichiers temporaires / Runtime
+# ================================
+*.pid
+*.seed
+*.pid.lock
+*.log
+logs/
+tmp/
+temp/
+
+# ================================
+# Tests / Coverage
+# ================================
+coverage/
+.nyc_output/
+test-results/
+*.lcov
+
+# ================================
+# Docker (fichiers locaux)
+# ================================
+docker-compose.override.yml
+
+# ================================
+# Divers
+# ================================
+*.bak
+*.backup
+*.orig
+*.tmp
 .gradle/
