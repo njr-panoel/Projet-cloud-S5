@@ -101,7 +101,7 @@ INSERT INTO users (email, nom, prenom, telephone, password, role, auth_provider,
 VALUES 
     ('visiteur@test.com', 'Rakoto', 'Jean', '034 12 345 67', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcg7b3XeKeUxWdeS86E36P4/TVm', 'VISITEUR', 'LOCAL', true, false, 0),
     ('mobile@test.com', 'Razafi', 'Marie', '034 98 765 43', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcg7b3XeKeUxWdeS86E36P4/TVm', 'UTILISATEUR_MOBILE', 'LOCAL', true, false, 0),
-    ('manager@test.com', 'Dupont', 'Paul', '034 55 666 77', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcg7b3XeKeUxWdeS86E36P4/TVm', 'MANAGER', 'LOCAL', true, false, 0)
+    ('manager@test.com', 'Dupont', 'Paul', '034 55 666 77', '$2b$12$6GinaQ.A4G/kovg1Tedane4wqRpsAR2eSXC1/3C9jMJ1vADpRYOjK', 'MANAGER', 'LOCAL', true, false, 0)
 ON CONFLICT (email) DO NOTHING;
 
 -- Insert sample signalements
