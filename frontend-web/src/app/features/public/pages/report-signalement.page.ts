@@ -1,5 +1,5 @@
 import { Component, DestroyRef, inject } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -113,6 +113,7 @@ export class ReportSignalementPage {
   private readonly fb = inject(FormBuilder);
   private readonly signalements = inject(SignalementsService);
   private readonly toast = inject(ToastService);
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -137,6 +138,21 @@ export class ReportSignalementPage {
     adresse: [''],
     photos: ['']
   });
+
+  constructor() {
+    const qp = this.route.snapshot.queryParamMap;
+    const lat = Number(qp.get('lat'));
+    const lonRaw = qp.get('lon') ?? qp.get('lng');
+    const lon = Number(lonRaw);
+
+    if (Number.isFinite(lat)) {
+      this.form.controls.latitude.setValue(lat);
+    }
+
+    if (Number.isFinite(lon)) {
+      this.form.controls.longitude.setValue(lon);
+    }
+  }
 
   submit() {
     if (this.form.invalid) {

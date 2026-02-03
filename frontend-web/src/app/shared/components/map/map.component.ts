@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, DestroyRef, ElementRef, OnDestroy, inject, viewChild } from '@angular/core';
+import { AfterViewInit, Component, DestroyRef, ElementRef, EventEmitter, OnDestroy, Output, inject, viewChild } from '@angular/core';
 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -39,6 +39,10 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   private readonly mapService = inject(MapService);
   private readonly destroyRef = inject(DestroyRef);
 
+  private unsubscribeClick: (() => void) | null = null;
+
+  @Output() locationSelected = new EventEmitter<{ lat: number; lon: number }>();
+
   private resizeObserver: ResizeObserver | null = null;
 
   protected filtre: StatutFiltre = 'TOUS';
@@ -47,6 +51,11 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
   async ngAfterViewInit() {
     await this.mapService.initMap(this.mapEl().nativeElement);
+
+    this.unsubscribeClick?.();
+    this.unsubscribeClick = this.mapService.onMapClick((lat, lon) => {
+      this.locationSelected.emit({ lat, lon });
+    });
 
     this.mapService
       .loadSignalements()
@@ -69,6 +78,9 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.unsubscribeClick?.();
+    this.unsubscribeClick = null;
+
     this.resizeObserver?.disconnect();
     this.resizeObserver = null;
     this.mapService.destroy();

@@ -18,6 +18,9 @@ export class MapService {
   private markersLayer: (import('leaflet').LayerGroup) | null = null;
   private legendControl: (import('leaflet').Control) | null = null;
 
+  private readonly mapClickHandlers = new Set<(lat: number, lon: number) => void>();
+  private mapClickListener: ((e: unknown) => void) | null = null;
+
   private allSignalements: SignalementDto[] = [];
   private filtre: StatutFiltre = 'TOUS';
 
@@ -48,10 +51,50 @@ export class MapService {
 
     this.installLegend(L);
 
+    this.installClickListener();
+
     this.render();
   }
 
+  onMapClick(handler: (lat: number, lon: number) => void) {
+    this.mapClickHandlers.add(handler);
+    return () => {
+      this.mapClickHandlers.delete(handler);
+    };
+  }
+
+  private installClickListener() {
+    if (!this.map || !this.L) {
+      return;
+    }
+
+    if (this.mapClickListener) {
+      return;
+    }
+
+    this.mapClickListener = (e: unknown) => {
+      const anyE = e as { latlng?: { lat: number; lng: number } };
+      const lat = anyE.latlng?.lat;
+      const lon = anyE.latlng?.lng;
+
+      if (typeof lat !== 'number' || typeof lon !== 'number') {
+        return;
+      }
+
+      for (const h of this.mapClickHandlers) {
+        h(lat, lon);
+      }
+    };
+
+    this.map.on('click', this.mapClickListener as unknown as (evt: import('leaflet').LeafletMouseEvent) => void);
+  }
+
   destroy() {
+    if (this.map && this.mapClickListener) {
+      this.map.off('click', this.mapClickListener as unknown as (evt: import('leaflet').LeafletMouseEvent) => void);
+    }
+    this.mapClickListener = null;
+
     this.map?.remove();
     this.map = null;
     this.markersLayer = null;
