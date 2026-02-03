@@ -114,23 +114,61 @@ run_mobile() {
 }
 
 docker_up() {
-  if _cmd docker; then
+  if _cmd docker || _cmd docker-compose || _cmd podman; then
     echo "➡️  Démarrage via Docker Compose (dev/docker-compose.yml)..."
-    (cd "$DEV_DIR" && docker compose up -d --build)
-    echo "✅ Docker containers démarrés"
+    pushd "$DEV_DIR" >/dev/null
+    # Prefer docker compose (long flag --detach avoids shorthand incompatibilities)
+    if _cmd docker; then
+      if docker compose up --detach --build; then
+        echo "✅ Docker containers démarrés (docker compose)"
+      else
+        echo "⚠️ 'docker compose up' a échoué — tentative avec 'docker-compose'..."
+        if _cmd docker-compose && docker-compose up -d --build; then
+          echo "✅ Docker containers démarrés (docker-compose)"
+        elif _cmd podman && podman compose up --detach --build; then
+          echo "✅ Containers démarrés (podman compose)"
+        else
+          echo "❌ Échec du démarrage via docker/podman compose. Vérifiez votre installation et permissions." >&2
+          popd >/dev/null
+          return 1
+        fi
+      fi
+    elif _cmd docker-compose; then
+      docker-compose up -d --build && echo "✅ Docker containers démarrés (docker-compose)" || { echo "❌ docker-compose failed" >&2; popd >/dev/null; return 1; }
+    elif _cmd podman; then
+      podman compose up --detach --build && echo "✅ Containers démarrés (podman compose)" || { echo "❌ podman compose failed" >&2; popd >/dev/null; return 1; }
+    fi
+    popd >/dev/null
   else
-    echo "Docker non trouvé. Installez Docker pour utiliser cette option." >&2
+    echo "Docker/Podman non trouvé. Installez Docker ou Podman pour utiliser cette option." >&2
     exit 1
   fi
 }
 
 docker_down() {
-  if _cmd docker; then
+  if _cmd docker || _cmd docker-compose || _cmd podman; then
     echo "➡️  Arrêt des containers Docker..."
-    (cd "$DEV_DIR" && docker compose down -v)
-    echo "✅ Docker containers arrêtés"
+    pushd "$DEV_DIR" >/dev/null
+    if _cmd docker; then
+      if docker compose down -v; then
+        echo "✅ Docker containers arrêtés (docker compose)"
+      elif _cmd docker-compose && docker-compose down -v; then
+        echo "✅ Docker containers arrêtés (docker-compose)"
+      elif _cmd podman && podman compose down -v; then
+        echo "✅ Containers arrêtés (podman compose)"
+      else
+        echo "⚠️ Échec de l'arrêt via docker/podman compose. Vérifiez manuellement." >&2
+        popd >/dev/null
+        return 1
+      fi
+    elif _cmd docker-compose; then
+      docker-compose down -v && echo "✅ Docker containers arrêtés (docker-compose)" || { echo "❌ docker-compose down failed" >&2; popd >/dev/null; return 1; }
+    elif _cmd podman; then
+      podman compose down -v && echo "✅ Containers arrêtés (podman compose)" || { echo "❌ podman compose down failed" >&2; popd >/dev/null; return 1; }
+    fi
+    popd >/dev/null
   else
-    echo "Docker non trouvé. Rien à faire." >&2
+    echo "Docker/Podman non trouvé. Rien à faire." >&2
   fi
 }
 
@@ -138,15 +176,27 @@ start_both_local() {
   # Build then run backend in background and web in foreground
   echo "➡️ Construction du backend..."
   build_backend
-  local mvn
   mvn=$(mvn_cmd)
   if [ -z "$mvn" ]; then
     echo "Erreur: Maven non trouvé. Installez Maven ou utilisez le wrapper 'mvnw' dans $DEV_DIR." >&2
     exit 1
   fi
+  # remove stale pid
+  rm -f "$DEV_DIR/backend.pid"
   echo "➡️ Lancement du backend en arrière-plan (logs: $DEV_DIR/backend.log, PID: $DEV_DIR/backend.pid)..."
-  (cd "$DEV_DIR" && nohup "$mvn" spring-boot:run > backend.log 2>&1 & echo $! > backend.pid)
-  echo "✅ Backend lancé (PID $(cat \"$DEV_DIR/backend.pid\"))"
+  pushd "$DEV_DIR" >/dev/null
+  nohup "$mvn" spring-boot:run > backend.log 2>&1 &
+  backend_pid=$!
+  echo "$backend_pid" > backend.pid
+  popd >/dev/null
+  sleep 2
+  if kill -0 "$backend_pid" >/dev/null 2>&1; then
+    echo "✅ Backend lancé (PID $backend_pid)"
+  else
+    echo "❌ Échec du lancement du backend. Affichage des 200 dernières lignes des logs :"
+    tail -n 200 "$DEV_DIR/backend.log" || true
+    exit 1
+  fi
   echo "➡️ Lancement du front (dev) en avant-plan..."
   run_web
 }
@@ -157,21 +207,29 @@ stop_all_local() {
     if [ -n "$pid" ] && kill -0 "$pid" >/dev/null 2>&1; then
       echo "➡️ Arrêt du backend (PID $pid)..."
       kill "$pid" || true
+      sleep 1
+      if kill -0 "$pid" >/dev/null 2>&1; then
+        echo "➡️ Forcer l'arrêt du backend (PID $pid)..."
+        kill -9 "$pid" || true
+      fi
       rm -f "$DEV_DIR/backend.pid"
       echo "✅ Backend arrêté"
     else
       echo "ℹ️ PID non valide ou processus déjà terminé. Suppression du fichier PID si présent."
       rm -f "$DEV_DIR/backend.pid" 2>/dev/null || true
+      pkill -f 'spring-boot:run' || true
     fi
   else
-    echo "ℹ️ Aucun PID backend trouvé."
+    echo "ℹ️ Aucun PID backend trouvé. Tentative d'arrêt par nom de processus..."
+    pkill -f 'spring-boot:run' || true
   fi
   echo "Si le web est en avant-plan dans ce terminal, utilisez Ctrl+C pour l'arrêter."
 } 
 
 # main
 if [ "$#" -eq 0 ]; then
-  ACTION=help
+  echo "➡️ Aucun argument fourni — démarrage par défaut: start-all"
+  ACTION=start-all
 else
   ACTION="$1"
 fi

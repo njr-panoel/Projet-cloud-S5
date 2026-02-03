@@ -62,7 +62,7 @@ export const MapTooltip: React.FC<MapTooltipProps> = ({ signalement }) => {
         </div>
 
         {/* Surface en m² */}
-        {signalement.surfaceM2 && (
+        {(signalement.surfaceM2 !== undefined && signalement.surfaceM2 !== null) && (
           <div className="flex items-center gap-1.5">
             <Ruler className="w-3.5 h-3.5" />
             <span>{signalement.surfaceM2.toLocaleString()} m²</span>
@@ -70,7 +70,7 @@ export const MapTooltip: React.FC<MapTooltipProps> = ({ signalement }) => {
         )}
 
         {/* Budget */}
-        {signalement.budget && (
+        {(signalement.budget !== undefined && signalement.budget !== null) && (
           <div className="flex items-center gap-1.5">
             <Banknote className="w-3.5 h-3.5" />
             <span>{formatBudget(signalement.budget)}</span>

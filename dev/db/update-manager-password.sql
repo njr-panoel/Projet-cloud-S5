@@ -6,3 +6,5 @@ WHERE email = 'manager@test.com';
 
 -- Verify:
 -- SELECT email, password FROM users WHERE email = 'manager@test.com';
+--Email:manager@test.com ==>Mdp:Password123!
+
