@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Users, UserPlus, Search, Trash2, Shield, Phone, Mail, Eye, EyeOff } from 'lucide-react';
+import { Users, UserPlus, Search, Trash2, Shield, Phone, Mail, Eye, EyeOff, RefreshCw } from 'lucide-react';
 import { Card, Button, Input, Select, Table, Badge, Modal, ModalFooter } from '../../components/ui';
 import { Toast } from '../../components/ui/Toast';
 import { userService } from '../../services/userService';
+import { syncService } from '../../services/syncService';
 import type { User, UserRole, RegisterRequest } from '../../types';
 
 const createUserSchema = z.object({
@@ -106,6 +107,16 @@ export const UsersPage: React.FC = () => {
       fetchUsers();
     } catch (error) {
       Toast.error('Erreur lors de la mise à jour du rôle');
+    }
+  };
+
+  // Synchroniser les comptes mobiles vers Firebase
+  const handleSyncUsersToFirebase = async () => {
+    try {
+      await syncService.syncUsersToFirebase();
+      Toast.success('Comptes mobiles synchronisés vers Firebase !');
+    } catch (error) {
+      Toast.error('Erreur lors de la synchronisation vers Firebase');
     }
   };
 
@@ -219,12 +230,22 @@ export const UsersPage: React.FC = () => {
                 </p>
               </div>
             </div>
-            <Button
-              onClick={() => setShowCreateModal(true)}
-              leftIcon={<UserPlus className="w-4 h-4" />}
-            >
-              Créer un utilisateur
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="secondary"
+                onClick={handleSyncUsersToFirebase}
+                leftIcon={<RefreshCw className="w-4 h-4" />}
+                title="Synchroniser les comptes mobiles vers Firebase"
+              >
+                Sync Firebase
+              </Button>
+              <Button
+                onClick={() => setShowCreateModal(true)}
+                leftIcon={<UserPlus className="w-4 h-4" />}
+              >
+                Créer un utilisateur
+              </Button>
+            </div>
           </div>
         </div>
       </header>

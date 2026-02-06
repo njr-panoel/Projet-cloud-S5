@@ -10,6 +10,7 @@ import com.google.firebase.database.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +30,19 @@ public class SyncService {
     
     @Value("${app.firebase.enabled:false}")
     private Boolean firebaseEnabled;
+    
+    /**
+     * Synchronisation automatique toutes les 30 secondes
+     */
+    @Scheduled(fixedRate = 30000)
+    public void autoSyncToFirebase() {
+        if (firebaseEnabled) {
+            int synced = syncSignalementsToFirebase();
+            if (synced > 0) {
+                log.info("Auto-sync: {} signalement(s) synchronisé(s) vers Firebase", synced);
+            }
+        }
+    }
     
     /**
      * Synchronise tous les signalements non synchronisés vers Firebase
