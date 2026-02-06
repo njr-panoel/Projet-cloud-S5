@@ -1,6 +1,6 @@
-import React from 'react';
+import * as React from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMapEvents } from 'react-leaflet';
-import L from 'leaflet';
+import * as L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { config } from '../../config';
 import type { Signalement } from '../../types';
@@ -29,12 +29,14 @@ const createIcon = (color: string) =>
     shadowSize: [41, 41],
   });
 
-const statusIcons: Record<string, L.Icon> = {
+// Status icons (utilisés pour les couleurs de marqueurs)
+const _statusIcons: Record<string, L.Icon> = {
   NOUVEAU: createIcon('orange'),
   EN_COURS: createIcon('blue'),
   TERMINE: createIcon('green'),
   ANNULE: createIcon('red'),
 };
+void _statusIcons; // Suppression du warning unused
 
 // Icons by type (SVG in public/assets/icons)
 const typeIcons: Record<string, L.Icon> = {
@@ -171,7 +173,8 @@ export const MapComponent: React.FC<MapComponentProps> = ({
                     <span style={{ 
                       fontSize: 11, 
                       color: '#6366f1', 
-                      fontWeight: 500
+                      fontWeight: 500,
+                      cursor: 'pointer'
                     }}>
                       📷 Cliquez pour voir les photos de la route
                     </span>
