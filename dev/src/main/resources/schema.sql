@@ -49,7 +49,11 @@ CREATE TABLE IF NOT EXISTS signalements (
     firebase_id VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    completed_at TIMESTAMP
+    completed_at TIMESTAMP,
+    -- Colonnes pour le suivi d'avancement
+    date_nouveau TIMESTAMP,
+    date_en_cours TIMESTAMP,
+    date_termine TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_signalements_statut ON signalements(statut);

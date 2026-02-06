@@ -12,6 +12,11 @@ export interface SyncStats {
   firebaseEnabled: boolean;
 }
 
+export interface SyncResult {
+  message: string;
+  syncedCount: number;
+}
+
 export const syncService = {
   // Récupérer les signalements depuis Firebase vers PostgreSQL
   async syncFromFirebase(): Promise<void> {
@@ -21,12 +26,22 @@ export const syncService = {
     }
   },
 
-  // Envoyer les signalements vers Firebase pour l'app mobile
-  async syncToFirebase(): Promise<void> {
-    const response = await api.post<ApiResponse<void>>(config.endpoints.sync.toFirebase);
+  // Envoyer les signalements non synchronisés vers Firebase
+  async syncToFirebase(): Promise<SyncResult> {
+    const response = await api.post<ApiResponse<SyncResult>>(config.endpoints.sync.toFirebase);
     if (!response.data.success) {
       throw new Error(response.data.message || 'Erreur de synchronisation');
     }
+    return response.data.data!;
+  },
+
+  // Forcer la synchronisation de TOUS les signalements vers Firebase
+  async forceSyncToFirebase(): Promise<SyncResult> {
+    const response = await api.post<ApiResponse<SyncResult>>(`${config.endpoints.sync.base}/force-to-firebase`);
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Erreur de synchronisation forcée');
+    }
+    return response.data.data!;
   },
 
   // Envoyer les comptes utilisateurs mobiles vers Firebase

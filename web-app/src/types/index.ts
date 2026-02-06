@@ -55,6 +55,13 @@ export interface Signalement {
   createdAt: string;
   updatedAt: string;
   completedAt?: string;
+  // Champs d'avancement
+  dateNouveau?: string;
+  dateEnCours?: string;
+  dateTermine?: string;
+  avancement?: number; // 0, 50 ou 100
+  delaiTraitementJours?: number;
+  delaiPriseEnChargeJours?: number;
 }
 
 export interface SignalementFormData {

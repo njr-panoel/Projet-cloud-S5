@@ -28,7 +28,9 @@ export const config = {
       createManager: `${API_URL}/users/manager`,
     },
     sync: {
+      base: `${API_URL}/sync`,
       toFirebase: `${API_URL}/sync/to-firebase`,
+      forceToFirebase: `${API_URL}/sync/force-to-firebase`,
       fromFirebase: `${API_URL}/sync/from-firebase`,
       usersToFirebase: `${API_URL}/sync/users-to-firebase`,
       full: `${API_URL}/sync/full`,

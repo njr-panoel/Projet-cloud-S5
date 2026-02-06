@@ -8,6 +8,7 @@ import { DashboardPage } from '../pages/manager/DashboardPage';
 import { UsersBlockedPage } from '../pages/manager/UsersBlockedPage';
 import { UsersPage } from '../pages/manager/UsersPage';
 import { ManagersPage } from '../pages/manager/ManagersPage';
+import { StatistiquesPage } from '../pages/manager/StatistiquesPage';
 
 // Page 403 - Unauthorized
 const UnauthorizedPage = () => (
@@ -95,6 +96,30 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['MANAGER']}>
             <ManagersPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'statistiques',
+        element: (
+          <ProtectedRoute allowedRoles={['MANAGER']}>
+            <StatistiquesPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'manager/dashboard',
+        element: (
+          <ProtectedRoute allowedRoles={['MANAGER']}>
+            <DashboardPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'manager/statistiques',
+        element: (
+          <ProtectedRoute allowedRoles={['MANAGER']}>
+            <StatistiquesPage />
           </ProtectedRoute>
         ),
       },

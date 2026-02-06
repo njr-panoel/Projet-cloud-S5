@@ -34,27 +34,64 @@ public class SyncService {
      * Synchronise tous les signalements non synchronisés vers Firebase
      */
     @Transactional
-    public void syncSignalementsToFirebase() {
+    public int syncSignalementsToFirebase() {
         if (!firebaseEnabled) {
             log.warn("Firebase désactivé - Synchronisation impossible");
-            return;
+            return 0;
         }
         
         List<Signalement> unsyncedSignalements = signalementRepository.findBySynced(false);
         log.info("Synchronisation de {} signalements vers Firebase", unsyncedSignalements.size());
         
+        int synced = 0;
         for (Signalement signalement : unsyncedSignalements) {
             try {
                 syncSignalementToFirebase(signalement);
                 signalement.setSynced(true);
                 signalementRepository.save(signalement);
+                synced++;
                 
-                logSync("Signalement", signalement.getId(), "CREATE", signalement.getFirebaseId(), true, null);
+                logSync("Signalement", signalement.getId(), "SYNC", signalement.getFirebaseId(), true, null);
             } catch (Exception e) {
                 log.error("Erreur lors de la sync du signalement {}", signalement.getId(), e);
-                logSync("Signalement", signalement.getId(), "CREATE", null, false, e.getMessage());
+                logSync("Signalement", signalement.getId(), "SYNC", null, false, e.getMessage());
             }
         }
+        
+        log.info("Synchronisation terminée: {}/{} signalements envoyés vers Firebase", synced, unsyncedSignalements.size());
+        return synced;
+    }
+    
+    /**
+     * Force la synchronisation de TOUS les signalements vers Firebase (même ceux déjà synchronisés)
+     */
+    @Transactional
+    public int forceFullSyncToFirebase() {
+        if (!firebaseEnabled) {
+            log.warn("Firebase désactivé - Synchronisation impossible");
+            return 0;
+        }
+        
+        List<Signalement> allSignalements = signalementRepository.findAll();
+        log.info("Force sync de {} signalements vers Firebase", allSignalements.size());
+        
+        int synced = 0;
+        for (Signalement signalement : allSignalements) {
+            try {
+                syncSignalementToFirebase(signalement);
+                signalement.setSynced(true);
+                signalementRepository.save(signalement);
+                synced++;
+                
+                logSync("Signalement", signalement.getId(), "FORCE_SYNC", signalement.getFirebaseId(), true, null);
+            } catch (Exception e) {
+                log.error("Erreur lors de la sync du signalement {}", signalement.getId(), e);
+                logSync("Signalement", signalement.getId(), "FORCE_SYNC", null, false, e.getMessage());
+            }
+        }
+        
+        log.info("Force sync terminée: {}/{} signalements envoyés vers Firebase", synced, allSignalements.size());
+        return synced;
     }
     
     /**
@@ -64,6 +101,7 @@ public class SyncService {
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("signalements");
         
         Map<String, Object> data = new HashMap<>();
+        data.put("id", signalement.getId());
         data.put("titre", signalement.getTitre());
         data.put("description", signalement.getDescription());
         data.put("typeTravaux", signalement.getTypeTravaux().name());
@@ -72,21 +110,28 @@ public class SyncService {
         data.put("longitude", signalement.getLongitude());
         data.put("adresse", signalement.getAdresse());
         data.put("photos", signalement.getPhotos());
+        data.put("surfaceM2", signalement.getSurfaceM2());
+        data.put("budget", signalement.getBudget());
+        data.put("entreprise", signalement.getEntreprise());
         data.put("userId", signalement.getUser().getId());
-        data.put("createdAt", signalement.getCreatedAt().toString());
+        data.put("userEmail", signalement.getUser().getEmail());
+        data.put("createdAt", signalement.getCreatedAt() != null ? signalement.getCreatedAt().toString() : null);
+        data.put("updatedAt", signalement.getUpdatedAt() != null ? signalement.getUpdatedAt().toString() : null);
+        data.put("completedAt", signalement.getCompletedAt() != null ? signalement.getCompletedAt().toString() : null);
+        data.put("lastSyncedAt", LocalDateTime.now().toString());
         
         String firebaseId;
         if (signalement.getFirebaseId() != null) {
             firebaseId = signalement.getFirebaseId();
             ref.child(firebaseId).setValueAsync(data);
+            log.info("Signalement {} mis à jour sur Firebase avec l'ID {}", signalement.getId(), firebaseId);
         } else {
             DatabaseReference newRef = ref.push();
             firebaseId = newRef.getKey();
             newRef.setValueAsync(data);
             signalement.setFirebaseId(firebaseId);
+            log.info("Signalement {} créé sur Firebase avec l'ID {}", signalement.getId(), firebaseId);
         }
-        
-        log.info("Signalement {} synchronisé vers Firebase avec l'ID {}", signalement.getId(), firebaseId);
     }
     
     /**

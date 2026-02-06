@@ -21,12 +21,28 @@ public class SyncController {
     
     private final SyncService syncService;
     
-    @Operation(summary = "Synchroniser les signalements vers Firebase")
+    @Operation(summary = "Synchroniser les signalements vers Firebase (seulement les non-synchronisés)")
     @PostMapping("/to-firebase")
     @PreAuthorize("hasAnyRole('MANAGER', 'UTILISATEUR_MOBILE')")
-    public ResponseEntity<ApiResponse<Void>> syncToFirebase() {
-        syncService.syncSignalementsToFirebase();
-        return ResponseEntity.ok(ApiResponse.success("Synchronisation vers Firebase lancée", null));
+    public ResponseEntity<ApiResponse<Map<String, Object>>> syncToFirebase() {
+        int synced = syncService.syncSignalementsToFirebase();
+        Map<String, Object> result = Map.of(
+            "message", "Synchronisation vers Firebase terminée",
+            "syncedCount", synced
+        );
+        return ResponseEntity.ok(ApiResponse.success("Synchronisation vers Firebase terminée", result));
+    }
+    
+    @Operation(summary = "Forcer la synchronisation de TOUS les signalements vers Firebase")
+    @PostMapping("/force-to-firebase")
+    @PreAuthorize("hasRole('MANAGER')")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> forceSyncToFirebase() {
+        int synced = syncService.forceFullSyncToFirebase();
+        Map<String, Object> result = Map.of(
+            "message", "Force sync vers Firebase terminée",
+            "syncedCount", synced
+        );
+        return ResponseEntity.ok(ApiResponse.success("Force sync vers Firebase terminée", result));
     }
     
     @Operation(summary = "Synchroniser les signalements depuis Firebase")
