@@ -6,7 +6,8 @@ import {
   updateDoc,
   doc,
   query,
-  where
+  where,
+  serverTimestamp
 } from 'firebase/firestore';
 import { Preferences } from '@capacitor/preferences';
 import { QueuedSignalement, Signalement, SignalementInput } from '../models/signalement.model';
@@ -100,9 +101,9 @@ export const signalementService = {
       };
       console.log('📄 Données à enregistrer:', docData);
       
-      // Timeout de 15s sur l'appel Firestore
+      // Timeout de 30s sur l'appel Firestore
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Firestore timeout après 15s')), 15000)
+        setTimeout(() => reject(new Error('Firestore timeout après 30s - vérifiez les règles de sécurité Firestore dans la Console Firebase')), 30000)
       );
       
       console.log('⏳ Appel addDoc...');

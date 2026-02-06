@@ -116,35 +116,79 @@ const pickPhoto = async () => {
 // Test direct Firestore
 const testFirestore = async () => {
   console.log('🧪 Test Firestore démarré...');
-  console.log('🔗 DB instance:', db);
+  const results: string[] = [];
   
+  // Récupérer le token auth
+  let token = '';
   try {
-    // Test 1: Lecture
-    console.log('📖 Test lecture...');
-    const snap = await getDocs(collection(db, 'signalements'));
-    console.log('✅ Lecture OK, documents:', snap.size);
-    
-    // Test 2: Écriture avec timeout
-    console.log('✏️ Test écriture avec setDoc...');
-    const testDoc = { test: true, timestamp: Date.now() };
-    const docId = 'test_' + Date.now();
-    
-    const writePromise = setDoc(doc(db, 'test', docId), testDoc);
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('TIMEOUT 10s')), 10000)
-    );
-    
-    console.log('⏳ Attente réponse setDoc... docId:', docId);
-    await Promise.race([writePromise, timeoutPromise]);
-    console.log('✅ Écriture OK! ID:', docId);
-    
-    alert('✅ Firestore fonctionne! Vérifiez la console.');
-  } catch (error: any) {
-    console.error('❌ Test échoué:', error);
-    console.error('Code:', error?.code);
-    console.error('Message:', error?.message);
-    alert('❌ Erreur: ' + (error?.message || error));
+    const user = auth.user;
+    if (user) {
+      token = await (user as any).getIdToken();
+      results.push('✅ Auth: ' + user.email);
+    } else {
+      results.push('❌ Auth: non connecté');
+      alert('❌ Vous devez être connecté');
+      return;
+    }
+  } catch (e: any) {
+    results.push('❌ Auth: ' + e.message);
   }
+
+  // Test REST API direct (contourne le SDK)
+  try {
+    console.log('🌐 Test REST API Firestore...');
+    const url = 'https://firestore.googleapis.com/v1/projects/road-issues-tana/databases/(default)/documents/signalements?pageSize=1';
+    const resp = await fetch(url, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const body = await resp.text();
+    console.log('📡 REST status:', resp.status, 'body:', body.substring(0, 500));
+    if (resp.ok) {
+      const data = JSON.parse(body);
+      const count = data.documents ? data.documents.length : 0;
+      results.push('✅ REST API: HTTP ' + resp.status + ' (' + count + ' doc(s))');
+    } else {
+      results.push('❌ REST API: HTTP ' + resp.status + '\n' + body.substring(0, 200));
+    }
+  } catch (e: any) {
+    results.push('❌ REST API: ' + e.message);
+    console.error('❌ REST échoué:', e);
+  }
+
+  // Test écriture REST API direct
+  try {
+    console.log('✏️ Test écriture REST API...');
+    const docId = 'test_' + Date.now();
+    const url = 'https://firestore.googleapis.com/v1/projects/road-issues-tana/databases/(default)/documents/test?documentId=' + docId;
+    const body = {
+      fields: {
+        test: { booleanValue: true },
+        ts: { integerValue: String(Date.now()) }
+      }
+    };
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+    const respBody = await resp.text();
+    console.log('📡 REST write status:', resp.status, 'body:', respBody.substring(0, 500));
+    if (resp.ok) {
+      results.push('✅ Écriture REST: document test/' + docId + ' créé!');
+    } else {
+      results.push('❌ Écriture REST: HTTP ' + resp.status + '\n' + respBody.substring(0, 200));
+    }
+  } catch (e: any) {
+    results.push('❌ Écriture REST: ' + e.message);
+  }
+  
+  // Afficher le résultat complet
+  const msg = '🧪 DIAGNOSTIC FIRESTORE\n\n' + results.join('\n\n');
+  console.log(msg);
+  alert(msg);
 };
 
 const submit = async () => {
@@ -186,11 +230,22 @@ const submit = async () => {
     clearTimeout(timeoutId);
     saving.value = false;
     emit('submitted');
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Erreur lors de la sauvegarde:', error);
+    console.error('❌ Code:', error?.code, 'Message:', error?.message);
     clearTimeout(timeoutId);
     saving.value = false;
-    alert('Erreur lors de la sauvegarde. Veuillez réessayer.');
+    
+    const code = error?.code || '';
+    const msg = error?.message || String(error);
+    
+    if (code === 'permission-denied' || code === 'PERMISSION_DENIED') {
+      alert('❌ Permission refusée par Firestore.\n\nAllez dans la Console Firebase > Firestore > Rules et autorisez les écritures pour les utilisateurs authentifiés.');
+    } else if (msg.includes('timeout') || msg.includes('Timeout')) {
+      alert('⏱️ Timeout Firestore.\n\nCauses possibles :\n- Règles Firestore bloquent l\'écriture\n- Problème réseau\n\nVérifiez les Rules dans la Console Firebase.');
+    } else {
+      alert(`❌ Erreur: ${code || 'inconnue'}\n${msg}`);
+    }
   }
 };
 
