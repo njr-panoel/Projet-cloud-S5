@@ -163,13 +163,57 @@ public class SyncService {
         long successfulSyncs = syncLogRepository.findBySuccess(true).size();
         long failedSyncs = syncLogRepository.findBySuccess(false).size();
         
+        long totalUsers = userRepository.count();
+        
         stats.put("totalSignalements", totalSignalements);
         stats.put("syncedSignalements", syncedSignalements);
         stats.put("unsyncedSignalements", unsyncedSignalements);
         stats.put("successfulSyncs", successfulSyncs);
         stats.put("failedSyncs", failedSyncs);
+        stats.put("totalUsers", totalUsers);
         stats.put("firebaseEnabled", firebaseEnabled);
         
         return stats;
+    }
+    
+    /**
+     * Synchronise les comptes utilisateurs mobiles vers Firebase
+     */
+    @Transactional
+    public void syncUsersToFirebase() {
+        if (!firebaseEnabled) {
+            log.warn("Firebase désactivé - Synchronisation des utilisateurs impossible");
+            return;
+        }
+        
+        List<User> mobileUsers = userRepository.findAll().stream()
+                .filter(u -> u.getRole().name().equals("UTILISATEUR_MOBILE"))
+                .toList();
+        
+        log.info("Synchronisation de {} comptes mobiles vers Firebase", mobileUsers.size());
+        
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users");
+        
+        for (User user : mobileUsers) {
+            try {
+                Map<String, Object> data = new HashMap<>();
+                data.put("id", user.getId());
+                data.put("email", user.getEmail());
+                data.put("nom", user.getNom());
+                data.put("prenom", user.getPrenom());
+                data.put("telephone", user.getTelephone());
+                data.put("role", user.getRole().name());
+                data.put("active", user.getActive());
+                data.put("createdAt", user.getCreatedAt().toString());
+                
+                ref.child(user.getId().toString()).setValueAsync(data);
+                
+                logSync("User", user.getId(), "SYNC_TO_FIREBASE", user.getId().toString(), true, null);
+                log.info("Utilisateur {} synchronisé vers Firebase", user.getEmail());
+            } catch (Exception e) {
+                log.error("Erreur lors de la sync de l'utilisateur {}", user.getId(), e);
+                logSync("User", user.getId(), "SYNC_TO_FIREBASE", null, false, e.getMessage());
+            }
+        }
     }
 }

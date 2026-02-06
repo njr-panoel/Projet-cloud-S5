@@ -44,4 +44,21 @@ public class SyncController {
         Map<String, Object> stats = syncService.getSyncStats();
         return ResponseEntity.ok(ApiResponse.success(stats));
     }
+    
+    @Operation(summary = "Synchroniser les comptes mobiles vers Firebase")
+    @PostMapping("/users-to-firebase")
+    @PreAuthorize("hasRole('MANAGER')")
+    public ResponseEntity<ApiResponse<Void>> syncUsersToFirebase() {
+        syncService.syncUsersToFirebase();
+        return ResponseEntity.ok(ApiResponse.success("Comptes mobiles synchronisés vers Firebase", null));
+    }
+    
+    @Operation(summary = "Synchronisation complète (signalements + utilisateurs)")
+    @PostMapping("/full")
+    @PreAuthorize("hasRole('MANAGER')")
+    public ResponseEntity<ApiResponse<Void>> fullSync() {
+        syncService.syncSignalementsToFirebase();
+        syncService.syncUsersToFirebase();
+        return ResponseEntity.ok(ApiResponse.success("Synchronisation complète effectuée", null));
+    }
 }

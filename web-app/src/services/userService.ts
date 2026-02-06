@@ -1,6 +1,6 @@
 import api from './api';
 import { config } from '../config';
-import type { User, ApiResponse, UserRole, CreateManagerRequest } from '../types';
+import type { User, ApiResponse, UserRole, CreateManagerRequest, RegisterRequest, AuthResponse } from '../types';
 
 export const userService = {
   // Récupérer tous les utilisateurs (Manager uniquement)
@@ -65,5 +65,14 @@ export const userService = {
       throw new Error(response.data.message || 'Erreur lors de la création du manager');
     }
     return response.data.data;
+  },
+
+  // Créer un nouvel utilisateur (Manager uniquement)
+  async createUser(data: RegisterRequest): Promise<User> {
+    const response = await api.post<ApiResponse<AuthResponse>>(config.endpoints.auth.register, data);
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Erreur lors de la création');
+    }
+    return response.data.data.user;
   },
 };

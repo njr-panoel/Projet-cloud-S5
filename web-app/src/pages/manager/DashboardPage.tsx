@@ -5,7 +5,10 @@ import {
   Filter, 
   Edit, 
   Trash2,
-  ChevronDown
+  ChevronDown,
+  Download,
+  Upload,
+  Cloud
 } from 'lucide-react';
 import { Card, Button, Input, Select, Table, Badge, Modal, ModalFooter } from '../../components/ui';
 import { getStatutBadgeVariant, getStatutLabel, getTypeBadgeVariant, getTypeLabel } from '../../components/ui/Badge';
@@ -66,9 +69,9 @@ export const DashboardPage: React.FC = () => {
     try {
       await syncService.syncFromFirebase();
       await fetchSignalements();
-      Toast.success('Synchronisation depuis Firebase réussie !');
+      Toast.success('Signalements récupérés depuis Firebase !');
     } catch (error) {
-      Toast.error('Erreur lors de la synchronisation depuis Firebase');
+      Toast.error('Erreur lors de la récupération depuis Firebase');
     } finally {
       setIsSyncing(false);
     }
@@ -78,9 +81,22 @@ export const DashboardPage: React.FC = () => {
     setIsSyncing(true);
     try {
       await syncService.syncToFirebase();
-      Toast.success('Synchronisation vers Firebase réussie !');
+      Toast.success('Signalements envoyés vers Firebase !');
     } catch (error) {
-      Toast.error('Erreur lors de la synchronisation vers Firebase');
+      Toast.error('Erreur lors de l\'envoi vers Firebase');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleFullSync = async () => {
+    setIsSyncing(true);
+    try {
+      await syncService.fullSync();
+      await fetchSignalements();
+      Toast.success('Synchronisation complète réussie (signalements + utilisateurs) !');
+    } catch (error) {
+      Toast.error('Erreur lors de la synchronisation complète');
     } finally {
       setIsSyncing(false);
     }
@@ -211,16 +227,28 @@ export const DashboardPage: React.FC = () => {
                 variant="outline"
                 onClick={handleSyncFromFirebase}
                 isLoading={isSyncing}
-                leftIcon={<RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />}
+                leftIcon={<Download className="w-4 h-4" />}
+                title="Récupérer les signalements depuis Firebase"
               >
-                Récupérer (from Firebase)
+                Récupérer
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleSyncToFirebase}
+                isLoading={isSyncing}
+                leftIcon={<Upload className="w-4 h-4" />}
+                title="Envoyer les signalements vers Firebase"
+              >
+                Envoyer
               </Button>
               <Button
                 variant="primary"
-                onClick={handleSyncToFirebase}
+                onClick={handleFullSync}
                 isLoading={isSyncing}
+                leftIcon={<Cloud className={`w-4 h-4 ${isSyncing ? 'animate-pulse' : ''}`} />}
+                title="Sync complète: signalements + comptes mobiles"
               >
-                Envoyer (to Firebase)
+                Sync Firebase
               </Button>
             </div>
           </div>

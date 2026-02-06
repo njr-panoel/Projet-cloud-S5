@@ -36,15 +36,21 @@ const navItems: NavItem[] = [
     roles: ['MANAGER']
   },
   { 
-    path: '/managers', 
-    label: 'Gérer Managers', 
-    icon: <UserPlus className="w-5 h-5" />,
+    path: '/users', 
+    label: 'Utilisateurs', 
+    icon: <Users className="w-5 h-5" />,
     roles: ['MANAGER']
   },
   { 
     path: '/users-blocked', 
-    label: 'Utilisateurs bloqués', 
+    label: 'Bloqués', 
     icon: <Users className="w-5 h-5" />,
+    roles: ['MANAGER']
+  },
+  { 
+    path: '/managers', 
+    label: 'Managers', 
+    icon: <UserPlus className="w-5 h-5" />,
     roles: ['MANAGER']
   },
 ];

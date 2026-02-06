@@ -2,17 +2,52 @@ import api from './api';
 import { config } from '../config';
 import type { ApiResponse } from '../types';
 
+export interface SyncStats {
+  totalSignalements: number;
+  syncedSignalements: number;
+  unsyncedSignalements: number;
+  successfulSyncs: number;
+  failedSyncs: number;
+  totalUsers: number;
+  firebaseEnabled: boolean;
+}
+
 export const syncService = {
+  // Récupérer les signalements depuis Firebase vers PostgreSQL
   async syncFromFirebase(): Promise<void> {
-    await api.post<ApiResponse<void>>(config.endpoints.sync.fromFirebase);
+    const response = await api.post<ApiResponse<void>>(config.endpoints.sync.fromFirebase);
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Erreur de synchronisation');
+    }
   },
 
+  // Envoyer les signalements vers Firebase pour l'app mobile
   async syncToFirebase(): Promise<void> {
-    await api.post<ApiResponse<void>>(config.endpoints.sync.toFirebase);
+    const response = await api.post<ApiResponse<void>>(config.endpoints.sync.toFirebase);
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Erreur de synchronisation');
+    }
   },
 
-  async getStats() {
-    const response = await api.get<ApiResponse<Record<string, any>>>(config.endpoints.sync.stats);
+  // Envoyer les comptes utilisateurs mobiles vers Firebase
+  async syncUsersToFirebase(): Promise<void> {
+    const response = await api.post<ApiResponse<void>>(config.endpoints.sync.usersToFirebase);
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Erreur de synchronisation des utilisateurs');
+    }
+  },
+
+  // Synchronisation complète (signalements + utilisateurs)
+  async fullSync(): Promise<void> {
+    const response = await api.post<ApiResponse<void>>(config.endpoints.sync.full);
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Erreur de synchronisation complète');
+    }
+  },
+
+  // Obtenir les statistiques de synchronisation
+  async getStats(): Promise<SyncStats> {
+    const response = await api.get<ApiResponse<SyncStats>>(config.endpoints.sync.stats);
     return response.data.data;
   },
 };

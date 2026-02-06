@@ -28,8 +28,11 @@ export const config = {
       createManager: `${API_URL}/users/manager`,
     },
     sync: {
-      push: `${API_URL}/sync/push`,
-      pull: `${API_URL}/sync/pull`,
+      toFirebase: `${API_URL}/sync/to-firebase`,
+      fromFirebase: `${API_URL}/sync/from-firebase`,
+      usersToFirebase: `${API_URL}/sync/users-to-firebase`,
+      full: `${API_URL}/sync/full`,
+      stats: `${API_URL}/sync/stats`,
     },
   },
   map: {

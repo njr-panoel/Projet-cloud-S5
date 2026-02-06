@@ -31,9 +31,31 @@ public class DataInitializer implements CommandLineRunner {
     @Value("${app.default-manager.prenom}")
     private String defaultManagerPrenom;
 
+    @Value("${server.port:8080}")
+    private String serverPort;
+
     @Override
     public void run(String... args) {
         createDefaultManagerIfNotExists();
+        printStartupMessage();
+    }
+
+    private void printStartupMessage() {
+        log.info("");
+        log.info("╔═══════════════════════════════════════════════════════════════╗");
+        log.info("║                                                               ║");
+        log.info("║   🚀 SERVEUR DÉMARRÉ AVEC SUCCÈS !                            ║");
+        log.info("║                                                               ║");
+        log.info("║   API Backend:    http://localhost:{}                       ║", serverPort);
+        log.info("║   Swagger UI:     http://localhost:{}/swagger-ui.html       ║", serverPort);
+        log.info("║   API Docs:       http://localhost:{}/v3/api-docs           ║", serverPort);
+        log.info("║                                                               ║");
+        log.info("║   Manager par défaut:                                         ║");
+        log.info("║     Email:        {}                       ║", defaultManagerEmail);
+        log.info("║     Mot de passe: {}                                   ║", defaultManagerPassword);
+        log.info("║                                                               ║");
+        log.info("╚═══════════════════════════════════════════════════════════════╝");
+        log.info("");
     }
 
     private void createDefaultManagerIfNotExists() {

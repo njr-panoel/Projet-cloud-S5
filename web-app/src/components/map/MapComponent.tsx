@@ -6,46 +6,66 @@ import { config } from '../../config';
 import type { Signalement } from '../../types';
 import { MapTooltip } from './MapTooltip';
 
-// Fix for default markers
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-
-delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIcon2x,
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
-});
-
-// Custom marker icons by status (keep fallback to color markers)
-const createIcon = (color: string) =>
-  new L.Icon({
-    iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
-    shadowUrl: markerShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41],
+// Créer un marqueur GPS réaliste style Google Maps avec couleur personnalisée
+const createGpsMarkerIcon = (color: string, innerColor: string = '#ffffff') => {
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="32" height="48">
+      <defs>
+        <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.3"/>
+        </filter>
+        <linearGradient id="grad-${color.replace('#', '')}" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:${color};stop-opacity:1" />
+          <stop offset="100%" style="stop-color:${adjustColor(color, -30)};stop-opacity:1" />
+        </linearGradient>
+      </defs>
+      <!-- Pin shape -->
+      <path d="M12 0C5.4 0 0 5.4 0 12c0 7.2 12 24 12 24s12-16.8 12-24C24 5.4 18.6 0 12 0z" 
+            fill="url(#grad-${color.replace('#', '')})" 
+            filter="url(#shadow)"
+            stroke="${adjustColor(color, -40)}" 
+            stroke-width="0.5"/>
+      <!-- Inner circle -->
+      <circle cx="12" cy="11" r="5" fill="${innerColor}" opacity="0.95"/>
+      <!-- Highlight -->
+      <ellipse cx="8" cy="7" rx="3" ry="2" fill="white" opacity="0.3"/>
+    </svg>
+  `;
+  
+  return new L.DivIcon({
+    html: svg,
+    className: 'custom-gps-marker',
+    iconSize: [32, 48],
+    iconAnchor: [16, 48],
+    popupAnchor: [0, -48],
   });
-
-// Status icons (utilisés pour les couleurs de marqueurs)
-const _statusIcons: Record<string, L.Icon> = {
-  NOUVEAU: createIcon('orange'),
-  EN_COURS: createIcon('blue'),
-  TERMINE: createIcon('green'),
-  ANNULE: createIcon('red'),
 };
-void _statusIcons; // Suppression du warning unused
 
-// Icons by type (SVG in public/assets/icons)
-const typeIcons: Record<string, L.Icon> = {
-  NIDS_DE_POULE: new L.Icon({ iconUrl: '/assets/icons/pothole.svg', iconSize: [36, 36], iconAnchor: [18, 36], popupAnchor: [0, -30] }),
-  FISSURE: new L.Icon({ iconUrl: '/assets/icons/crack.svg', iconSize: [36, 36], iconAnchor: [18, 36], popupAnchor: [0, -30] }),
-  EAU: new L.Icon({ iconUrl: '/assets/icons/water.svg', iconSize: [36, 36], iconAnchor: [18, 36], popupAnchor: [0, -30] }),
-  TERMINE: new L.Icon({ iconUrl: '/assets/icons/check.svg', iconSize: [36, 36], iconAnchor: [18, 36], popupAnchor: [0, -30] }),
-  DEFAULT: new L.Icon({ iconUrl: '/assets/icons/default.svg', iconSize: [34, 34], iconAnchor: [17, 34], popupAnchor: [0, -26] }),
+// Fonction pour ajuster la luminosité d'une couleur
+function adjustColor(color: string, amount: number): string {
+  const hex = color.replace('#', '');
+  const r = Math.max(0, Math.min(255, parseInt(hex.substr(0, 2), 16) + amount));
+  const g = Math.max(0, Math.min(255, parseInt(hex.substr(2, 2), 16) + amount));
+  const b = Math.max(0, Math.min(255, parseInt(hex.substr(4, 2), 16) + amount));
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
+
+// Couleurs des statuts
+const STATUS_COLORS: Record<string, { main: string; inner: string }> = {
+  NOUVEAU: { main: '#f59e0b', inner: '#ffffff' },      // Orange - Nouveau
+  EN_COURS: { main: '#3b82f6', inner: '#ffffff' },     // Bleu - En cours
+  TERMINE: { main: '#22c55e', inner: '#ffffff' },      // Vert - Terminé
+  ANNULE: { main: '#ef4444', inner: '#ffffff' },       // Rouge - Annulé
 };
+
+// Créer les icônes par statut
+const getStatusIcon = (statut: string): L.DivIcon => {
+  const colors = STATUS_COLORS[statut] || STATUS_COLORS.NOUVEAU;
+  return createGpsMarkerIcon(colors.main, colors.inner);
+};
+
+// Marqueur pour position sélectionnée (rouge vif)
+const selectedPositionIcon = createGpsMarkerIcon('#dc2626', '#ffffff');
 
 interface MapComponentProps {
   signalements?: Signalement[];
@@ -91,7 +111,8 @@ export const MapComponent: React.FC<MapComponentProps> = ({
 
         {/* Signalements markers */}
         {signalements.map((signalement) => {
-          const iconByType = typeIcons[signalement.typeTravaux] || typeIcons.DEFAULT;
+          // Utiliser l'icône basée sur le statut (marqueur GPS réaliste)
+          const markerIcon = getStatusIcon(signalement.statut);
           
           // Labels et couleurs pour le statut
           const statutLabel: Record<string, string> = {
@@ -188,7 +209,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
             <Marker
               key={signalement.id}
               position={[signalement.latitude, signalement.longitude]}
-              icon={iconByType}
+              icon={markerIcon}
               eventHandlers={{
                 click: () => onMarkerClick?.(signalement),
               }}
@@ -205,7 +226,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
 
         {/* Selected position marker */}
         {selectedPosition && (
-          <Marker position={[selectedPosition.lat, selectedPosition.lng]}>
+          <Marker position={[selectedPosition.lat, selectedPosition.lng]} icon={selectedPositionIcon}>
             <Popup>
               <div className="text-sm">
                 <p className="font-medium">Position sélectionnée</p>
