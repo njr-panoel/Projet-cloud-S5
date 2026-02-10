@@ -3,7 +3,6 @@ import { MainLayout } from '../layouts/MainLayout';
 import { ProtectedRoute } from '../components/auth';
 import { LoginPage } from '../pages/auth/LoginPage';
 import { VisiteurPage } from '../pages/visiteur/VisiteurPage';
-import { SignalementPage } from '../pages/utilisateur/SignalementPage';
 import { DashboardPage } from '../pages/manager/DashboardPage';
 import { UsersBlockedPage } from '../pages/manager/UsersBlockedPage';
 import { UsersPage } from '../pages/manager/UsersPage';
@@ -58,14 +57,6 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <VisiteurPage />,
-      },
-      {
-        path: 'signalement',
-        element: (
-          <ProtectedRoute allowedRoles={['UTILISATEUR_MOBILE', 'MANAGER']}>
-            <SignalementPage />
-          </ProtectedRoute>
-        ),
       },
       {
         path: 'dashboard',

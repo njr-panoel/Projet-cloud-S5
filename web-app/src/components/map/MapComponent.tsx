@@ -71,6 +71,7 @@ interface MapComponentProps {
   signalements?: Signalement[];
   onMapClick?: (lat: number, lng: number) => void;
   onMarkerClick?: (signalement: Signalement) => void;
+  onShowPhotos?: (signalement: Signalement) => void;
   selectedPosition?: { lat: number; lng: number } | null;
   height?: string;
   interactive?: boolean;
@@ -89,6 +90,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
   signalements = [],
   onMapClick,
   onMarkerClick,
+  onShowPhotos,
   selectedPosition,
   height = '100%',
   interactive = true,
@@ -135,9 +137,31 @@ export const MapComponent: React.FC<MapComponentProps> = ({
             return `${budget.toLocaleString()} Ar`;
           };
 
+          // Labels pour les types de travaux
+          const typeLabel: Record<string, string> = {
+            'NIDS_DE_POULE': 'Nids de poule',
+            'FISSURE': 'Fissure',
+            'AFFAISSEMENT': 'Affaissement',
+            'INONDATION': 'Inondation',
+            'SIGNALISATION': 'Signalisation',
+            'ECLAIRAGE': 'Éclairage',
+            'AUTRE': 'Autre',
+          };
+
+          // Couleurs pour les types de travaux
+          const typeColor: Record<string, string> = {
+            'NIDS_DE_POULE': '#ef4444',
+            'FISSURE': '#f97316',
+            'AFFAISSEMENT': '#eab308',
+            'INONDATION': '#3b82f6',
+            'SIGNALISATION': '#8b5cf6',
+            'ECLAIRAGE': '#06b6d4',
+            'AUTRE': '#6b7280',
+          };
+
           // Contenu du tooltip au survol
           const hoverContent = (
-            <div style={{ minWidth: 280, maxWidth: 320, padding: 4 }}>
+            <div style={{ minWidth: 300, maxWidth: 340, padding: 6 }}>
               {/* Titre */}
               <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 8, color: '#1f2937' }}>
                 {signalement.titre}
@@ -160,12 +184,32 @@ export const MapComponent: React.FC<MapComponentProps> = ({
                 </span>
               </div>
 
+              {/* Type de travaux (Niveau) */}
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 6, 
+                marginBottom: 10,
+                padding: '6px 10px',
+                backgroundColor: `${typeColor[signalement.typeTravaux] || '#6b7280'}15`,
+                borderRadius: 6,
+                border: `1px solid ${typeColor[signalement.typeTravaux] || '#6b7280'}30`
+              }}>
+                <span style={{ fontSize: 14 }}>🔧</span>
+                <div>
+                  <div style={{ fontSize: 10, color: '#9ca3af' }}>Type / Niveau</div>
+                  <div style={{ fontWeight: 600, fontSize: 13, color: typeColor[signalement.typeTravaux] || '#6b7280' }}>
+                    {typeLabel[signalement.typeTravaux] || signalement.typeTravaux}
+                  </div>
+                </div>
+              </div>
+
               {/* Infos détaillées */}
               <div style={{ fontSize: 12, color: '#4b5563', borderTop: '1px solid #e5e7eb', paddingTop: 8 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
                   {/* Surface */}
                   <div style={{ backgroundColor: '#f3f4f6', padding: '6px 8px', borderRadius: 6 }}>
-                    <div style={{ fontSize: 10, color: '#9ca3af' }}>Surface</div>
+                    <div style={{ fontSize: 10, color: '#9ca3af' }}>📐 Surface</div>
                     <div style={{ fontWeight: 600, color: '#374151' }}>
                       {signalement.surfaceM2 ? `${signalement.surfaceM2.toLocaleString()} m²` : '—'}
                     </div>
@@ -173,7 +217,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
                   
                   {/* Budget */}
                   <div style={{ backgroundColor: '#f3f4f6', padding: '6px 8px', borderRadius: 6 }}>
-                    <div style={{ fontSize: 10, color: '#9ca3af' }}>Budget</div>
+                    <div style={{ fontSize: 10, color: '#9ca3af' }}>💰 Budget</div>
                     <div style={{ fontWeight: 600, color: '#374151' }}>
                       {signalement.budget ? formatBudget(signalement.budget) : '—'}
                     </div>
@@ -181,26 +225,30 @@ export const MapComponent: React.FC<MapComponentProps> = ({
                 </div>
 
                 {/* Entreprise */}
-                {signalement.entreprise && (
-                  <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <span>🏢</span>
-                    <span style={{ fontWeight: 500 }}>{signalement.entreprise}</span>
+                <div style={{ marginTop: 6, backgroundColor: '#f3f4f6', padding: '6px 8px', borderRadius: 6 }}>
+                  <div style={{ fontSize: 10, color: '#9ca3af' }}>🏢 Entreprise concernée</div>
+                  <div style={{ fontWeight: 600, color: '#374151' }}>
+                    {signalement.entreprise || '— Non assignée'}
                   </div>
-                )}
+                </div>
 
                 {/* Lien Photos */}
-                {signalement.photos && (
-                  <div style={{ marginTop: 8, textAlign: 'center' }}>
+                <div style={{ marginTop: 10, textAlign: 'center', padding: '8px', backgroundColor: '#eef2ff', borderRadius: 6 }}>
+                  {signalement.photos ? (
                     <span style={{ 
-                      fontSize: 11, 
-                      color: '#6366f1', 
-                      fontWeight: 500,
+                      fontSize: 12, 
+                      color: '#4f46e5', 
+                      fontWeight: 600,
                       cursor: 'pointer'
                     }}>
-                      📷 Cliquez pour voir les photos de la route
+                      📷 Cliquez pour voir les photos
                     </span>
-                  </div>
-                )}
+                  ) : (
+                    <span style={{ fontSize: 11, color: '#9ca3af' }}>
+                      Aucune photo disponible
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           );
@@ -218,7 +266,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
                 {hoverContent}
               </Tooltip>
               <Popup>
-                <MapTooltip signalement={signalement} />
+                <MapTooltip signalement={signalement} onShowPhotos={onShowPhotos} />
               </Popup>
             </Marker>
           );

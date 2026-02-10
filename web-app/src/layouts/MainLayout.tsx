@@ -24,12 +24,6 @@ interface NavItem {
 const navItems: NavItem[] = [
   { path: '/', label: 'Carte', icon: <Map className="w-5 h-5" /> },
   { 
-    path: '/signalement', 
-    label: 'Signaler', 
-    icon: <FileText className="w-5 h-5" />,
-    roles: ['UTILISATEUR_MOBILE', 'MANAGER']
-  },
-  { 
     path: '/dashboard', 
     label: 'Dashboard', 
     icon: <LayoutDashboard className="w-5 h-5" />,

@@ -9,6 +9,8 @@ export interface SyncStats {
   successfulSyncs: number;
   failedSyncs: number;
   totalUsers: number;
+  mobileUsers: number;
+  mobileUsersWithFirebaseAuth: number;
   firebaseEnabled: boolean;
 }
 
@@ -17,13 +19,39 @@ export interface SyncResult {
   syncedCount: number;
 }
 
+export interface BidirectionalSyncResult {
+  success: boolean;
+  syncedAt: string;
+  users: {
+    syncedCount: number;
+    syncedEmails: string[];
+  };
+  signalementsToFirebase: number;
+  signalementsFromFirebase: {
+    created: number;
+    updated: number;
+    errors: number;
+    total: number;
+  };
+}
+
 export const syncService = {
+  // Synchronisation bidirectionnelle complète (PostgreSQL ↔ Firebase)
+  async bidirectionalSync(): Promise<BidirectionalSyncResult> {
+    const response = await api.post<ApiResponse<BidirectionalSyncResult>>(config.endpoints.sync.bidirectional);
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Erreur de synchronisation bidirectionnelle');
+    }
+    return response.data.data!;
+  },
+
   // Récupérer les signalements depuis Firebase vers PostgreSQL
-  async syncFromFirebase(): Promise<void> {
-    const response = await api.post<ApiResponse<void>>(config.endpoints.sync.fromFirebase);
+  async syncFromFirebase(): Promise<{ created: number; updated: number; errors: number }> {
+    const response = await api.post<ApiResponse<{ created: number; updated: number; errors: number }>>(config.endpoints.sync.fromFirebase);
     if (!response.data.success) {
       throw new Error(response.data.message || 'Erreur de synchronisation');
     }
+    return response.data.data!;
   },
 
   // Envoyer les signalements non synchronisés vers Firebase
@@ -44,20 +72,22 @@ export const syncService = {
     return response.data.data!;
   },
 
-  // Envoyer les comptes utilisateurs mobiles vers Firebase
-  async syncUsersToFirebase(): Promise<void> {
-    const response = await api.post<ApiResponse<void>>(config.endpoints.sync.usersToFirebase);
+  // Envoyer les comptes utilisateurs mobiles vers Firebase Auth
+  async syncUsersToFirebase(): Promise<{ syncedCount: number; syncedEmails: string[]; metadataSynced: boolean }> {
+    const response = await api.post<ApiResponse<{ syncedCount: number; syncedEmails: string[]; metadataSynced: boolean }>>(config.endpoints.sync.usersToFirebase);
     if (!response.data.success) {
       throw new Error(response.data.message || 'Erreur de synchronisation des utilisateurs');
     }
+    return response.data.data!;
   },
 
-  // Synchronisation complète (signalements + utilisateurs)
-  async fullSync(): Promise<void> {
-    const response = await api.post<ApiResponse<void>>(config.endpoints.sync.full);
+  // Synchronisation complète (alias pour bidirectionnelle)
+  async fullSync(): Promise<BidirectionalSyncResult> {
+    const response = await api.post<ApiResponse<BidirectionalSyncResult>>(config.endpoints.sync.full);
     if (!response.data.success) {
       throw new Error(response.data.message || 'Erreur de synchronisation complète');
     }
+    return response.data.data!;
   },
 
   // Obtenir les statistiques de synchronisation

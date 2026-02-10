@@ -10,6 +10,8 @@ import com.cloud.dev.enums.Role;
 import com.cloud.dev.exception.ResourceNotFoundException;
 import com.cloud.dev.exception.UserAlreadyExistsException;
 import com.cloud.dev.repository.LoginAttemptRepository;
+import com.cloud.dev.repository.SessionRepository;
+import com.cloud.dev.repository.SignalementRepository;
 import com.cloud.dev.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +29,8 @@ public class UserService {
     
     private final UserRepository userRepository;
     private final LoginAttemptRepository loginAttemptRepository;
+    private final SessionRepository sessionRepository;
+    private final SignalementRepository signalementRepository;
     private final PasswordEncoder passwordEncoder;
     
     public List<UserResponse> getAllUsers() {
@@ -90,6 +94,11 @@ public class UserService {
     public void deleteUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur non trouvé"));
+        
+        // Supprimer les entités liées avant de supprimer l'utilisateur
+        loginAttemptRepository.deleteByUser(user);
+        sessionRepository.deleteByUser(user);
+        signalementRepository.deleteByUser(user);
         
         userRepository.delete(user);
         log.info("Utilisateur supprimé: {}", user.getEmail());

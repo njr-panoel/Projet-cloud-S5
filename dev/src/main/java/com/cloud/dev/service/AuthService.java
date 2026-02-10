@@ -40,6 +40,7 @@ public class AuthService {
     private final LoginAttemptRepository loginAttemptRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final FirebaseAuthService firebaseAuthService;
     
     @Value("${app.security.max-login-attempts}")
     private Integer maxLoginAttempts;
@@ -75,6 +76,16 @@ public class AuthService {
         }
         
         user = userRepository.save(user);
+        
+        // Créer le compte Firebase Auth immédiatement pour les utilisateurs mobiles
+        if (user.getRole() == com.cloud.dev.enums.Role.UTILISATEUR_MOBILE && firebaseEnabled) {
+            boolean firebaseCreated = firebaseAuthService.createFirebaseAccount(user, request.getPassword());
+            if (firebaseCreated) {
+                log.info("Compte Firebase Auth créé pour l'utilisateur mobile: {}", user.getEmail());
+            } else {
+                log.warn("Échec de la création du compte Firebase Auth pour: {}", user.getEmail());
+            }
+        }
         
         // Générer token JWT
         String token = jwtUtil.generateToken(user.getEmail());

@@ -130,8 +130,9 @@ export const SignalementEditModal: React.FC<SignalementEditModalProps> = ({
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-5">
           {/* Titre */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Titre</label>
+            <label htmlFor="titre" className="block text-sm font-medium text-gray-700 mb-1.5">Titre</label>
             <input
+              id="titre"
               {...register('titre')}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
             />
@@ -142,8 +143,9 @@ export const SignalementEditModal: React.FC<SignalementEditModalProps> = ({
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
             <textarea
+              id="description"
               {...register('description')}
               rows={3}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition resize-none"
@@ -153,8 +155,9 @@ export const SignalementEditModal: React.FC<SignalementEditModalProps> = ({
           {/* Statut & Type de travaux - Side by side */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Statut</label>
+              <label htmlFor="statut" className="block text-sm font-medium text-gray-700 mb-1.5">Statut</label>
               <select
+                id="statut"
                 {...register('statut')}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition bg-white"
               >
@@ -164,8 +167,9 @@ export const SignalementEditModal: React.FC<SignalementEditModalProps> = ({
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Type de travaux</label>
+              <label htmlFor="typeTravaux" className="block text-sm font-medium text-gray-700 mb-1.5">Type de travaux</label>
               <select
+                id="typeTravaux"
                 {...register('typeTravaux')}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition bg-white"
               >
@@ -178,8 +182,9 @@ export const SignalementEditModal: React.FC<SignalementEditModalProps> = ({
 
           {/* Adresse */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Adresse</label>
+            <label htmlFor="adresse" className="block text-sm font-medium text-gray-700 mb-1.5">Adresse</label>
             <input
+              id="adresse"
               {...register('adresse')}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
               placeholder="Route Nationale 5, Antananarivo"
@@ -189,8 +194,9 @@ export const SignalementEditModal: React.FC<SignalementEditModalProps> = ({
           {/* Latitude & Longitude */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Latitude</label>
+              <label htmlFor="latitude" className="block text-sm font-medium text-gray-700 mb-1.5">Latitude</label>
               <input
+                id="latitude"
                 {...register('latitude')}
                 type="number"
                 step="0.00001"
@@ -198,8 +204,9 @@ export const SignalementEditModal: React.FC<SignalementEditModalProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Longitude</label>
+              <label htmlFor="longitude" className="block text-sm font-medium text-gray-700 mb-1.5">Longitude</label>
               <input
+                id="longitude"
                 {...register('longitude')}
                 type="number"
                 step="0.00001"
@@ -215,8 +222,9 @@ export const SignalementEditModal: React.FC<SignalementEditModalProps> = ({
             {/* Surface & Budget */}
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Surface (m²)</label>
+                <label htmlFor="surfaceM2" className="block text-sm font-medium text-gray-700 mb-1.5">Surface (m²)</label>
                 <input
+                  id="surfaceM2"
                   {...register('surfaceM2')}
                   type="number"
                   step="0.1"
@@ -225,8 +233,9 @@ export const SignalementEditModal: React.FC<SignalementEditModalProps> = ({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Budget (Ariary)</label>
+                <label htmlFor="budget" className="block text-sm font-medium text-gray-700 mb-1.5">Budget (Ariary)</label>
                 <input
+                  id="budget"
                   {...register('budget')}
                   type="number"
                   step="1000"
@@ -238,8 +247,9 @@ export const SignalementEditModal: React.FC<SignalementEditModalProps> = ({
 
             {/* Entreprise */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Entreprise en charge</label>
+              <label htmlFor="entreprise" className="block text-sm font-medium text-gray-700 mb-1.5">Entreprise en charge</label>
               <input
+                id="entreprise"
                 {...register('entreprise')}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                 placeholder="Nom de l'entreprise"

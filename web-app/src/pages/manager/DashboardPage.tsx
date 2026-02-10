@@ -15,6 +15,8 @@ import { Link } from 'react-router-dom';
 import { Card, Button, Input, Select, Table, Badge, Modal, ModalFooter } from '../../components/ui';
 import { getStatutBadgeVariant, getStatutLabel, getTypeBadgeVariant, getTypeLabel } from '../../components/ui/Badge';
 import { Toast } from '../../components/ui/Toast';
+import { IconTypesTravaux } from '../../components/icons/IconTypesTravaux';
+import { IconStatut } from '../../components/icons/IconStatut';
 import { useSignalementStore } from '../../stores/signalementStore';
 import { syncService } from '../../services/syncService';
 import { SignalementEditModal } from './SignalementEditModal';
@@ -69,9 +71,9 @@ export const DashboardPage: React.FC = () => {
   const handleSyncFromFirebase = async () => {
     setIsSyncing(true);
     try {
-      await syncService.syncFromFirebase();
+      const result = await syncService.syncFromFirebase();
       await fetchSignalements();
-      Toast.success('Signalements récupérés depuis Firebase !');
+      Toast.success(`Synchronisation Firebase → PostgreSQL: ${result.created} créés, ${result.updated} mis à jour`);
     } catch (error) {
       Toast.error('Erreur lors de la récupération depuis Firebase');
     } finally {
@@ -110,9 +112,17 @@ export const DashboardPage: React.FC = () => {
   const handleFullSync = async () => {
     setIsSyncing(true);
     try {
-      await syncService.fullSync();
+      const result = await syncService.fullSync();
       await fetchSignalements();
-      Toast.success('Synchronisation complète réussie (signalements + utilisateurs) !');
+      const userCount = result.users?.syncedCount || 0;
+      const toFb = result.signalementsToFirebase || 0;
+      const fromFb = result.signalementsFromFirebase || { created: 0, updated: 0 };
+      Toast.success(
+        `Sync bidirectionnelle réussie! ` +
+        `Utilisateurs: ${userCount}, ` +
+        `→ Firebase: ${toFb}, ` +
+        `← Firebase: ${fromFb.created} créés, ${fromFb.updated} maj`
+      );
     } catch (error) {
       Toast.error('Erreur lors de la synchronisation complète');
     } finally {
@@ -161,9 +171,12 @@ export const DashboardPage: React.FC = () => {
       header: 'Statut',
       sortable: true,
       render: (item: Signalement) => (
-        <Badge variant={getStatutBadgeVariant(item.statut)}>
-          {getStatutLabel(item.statut)}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <IconStatut statut={item.statut} size="sm" />
+          <Badge variant={getStatutBadgeVariant(item.statut)}>
+            {getStatutLabel(item.statut)}
+          </Badge>
+        </div>
       ),
     },
     {
@@ -188,9 +201,12 @@ export const DashboardPage: React.FC = () => {
       header: 'Type',
       sortable: true,
       render: (item: Signalement) => (
-        <Badge variant={getTypeBadgeVariant(item.typeTravaux)}>
-          {getTypeLabel(item.typeTravaux)}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <IconTypesTravaux type={item.typeTravaux} size="sm" />
+          <Badge variant={getTypeBadgeVariant(item.typeTravaux)}>
+            {getTypeLabel(item.typeTravaux)}
+          </Badge>
+        </div>
       ),
     },
     {

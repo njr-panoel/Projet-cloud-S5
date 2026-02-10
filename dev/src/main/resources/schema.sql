@@ -134,7 +134,7 @@ SELECT
     'Route Nationale 5, Antananarivo',
     id,
     false
-FROM users WHERE email = 'mobile@test.com' LIMIT 1
+FROM users WHERE email = 'didier@gmail.com ' LIMIT 1
 ON CONFLICT DO NOTHING;
 
 -- =====================================================

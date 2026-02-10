@@ -57,14 +57,7 @@ echo -e "${YELLOW}Test 3: Création signalement${NC}"
 RESPONSE=$(curl -s -X POST "$API_URL/api/signalements" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
-  -d '{
-    "titre": "Test - Nid de poule",
-    "description": "Test automatique",
-    "typeTravaux": "NIDS_DE_POULE",
-    "latitude": -18.8792,
-    "longitude": 47.5079,
-    "adresse": "Avenue de l\'Indépendance"
-  }')
+  -d "{\n    \"titre\": \"Test - Nid de poule\",\n    \"description\": \"Test automatique\",\n    \"typeTravaux\": \"NIDS_DE_POULE\",\n    \"latitude\": -18.8792,\n    \"longitude\": 47.5079,\n    \"adresse\": \"Avenue de l'Indépendance\"\n  }" )
 
 if echo "$RESPONSE" | grep -q "success"; then
   echo -e "${GREEN}✓ Signalement créé${NC}"

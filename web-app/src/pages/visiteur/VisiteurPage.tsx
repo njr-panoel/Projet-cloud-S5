@@ -3,6 +3,8 @@ import { Filter, List, MapPin, Calendar, Building2 } from 'lucide-react';
 import { Card, Button, Select, Badge, getStatutBadgeVariant, getStatutLabel } from '../../components/ui';
 import { MapComponent } from '../../components/map';
 import { StatsGlobal } from '../../components/stats';
+import { DetailSignalement } from '../../components/signalement/DetailSignalement';
+import { GaleriePhotosDetail } from '../../components/photos/GaleriePhotosDetail';
 import { useSignalementStore } from '../../stores/signalementStore';
 import type { Signalement } from '../../types';
 
@@ -23,6 +25,7 @@ export const VisiteurPage: React.FC = () => {
   const { filteredSignalements, stats, fetchSignalements, isLoading, setFilters, filters } = useSignalementStore();
   const [showSidebar, setShowSidebar] = useState(true);
   const [selectedSignalement, setSelectedSignalement] = useState<Signalement | null>(null);
+  const [signalementGalerie, setSignalementGalerie] = useState<Signalement | null>(null);
 
   useEffect(() => {
     fetchSignalements();
@@ -96,9 +99,20 @@ export const VisiteurPage: React.FC = () => {
               <MapComponent
                 signalements={filteredSignalements}
                 onMarkerClick={setSelectedSignalement}
+                onShowPhotos={(sig) => setSignalementGalerie(sig)}
                 height="calc(100vh - 320px)"
               />
             </Card>
+
+            {/* Galerie de photos en dessous de la carte */}
+            {signalementGalerie && (
+              <div className="mt-6">
+                <GaleriePhotosDetail
+                  signalement={signalementGalerie}
+                  onClose={() => setSignalementGalerie(null)}
+                />
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -129,65 +143,11 @@ export const VisiteurPage: React.FC = () => {
               {/* Selected Signalement Card */}
               {selectedSignalement && (
                 <Card className="shadow-lg animate-fade-in border-l-4 border-indigo-500">
-                  <div className="flex items-start justify-between mb-3">
-                    <h3 className="font-semibold text-gray-800 leading-tight">
-                      {selectedSignalement.titre}
-                    </h3>
-                    <Badge variant={getStatutBadgeVariant(selectedSignalement.statut)}>
-                      {getStatutLabel(selectedSignalement.statut)}
-                    </Badge>
-                  </div>
-                  
-                  {selectedSignalement.description && (
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                      {selectedSignalement.description}
-                    </p>
-                  )}
-
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2 text-gray-500">
-                      <MapPin className="w-4 h-4" />
-                      <span>{selectedSignalement.adresse || `${selectedSignalement.latitude.toFixed(4)}, ${selectedSignalement.longitude.toFixed(4)}`}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-500">
-                      <Calendar className="w-4 h-4" />
-                      <span>{formatDate(selectedSignalement.createdAt)}</span>
-                    </div>
-                    {selectedSignalement.entreprise && (
-                      <div className="flex items-center gap-2 text-gray-500">
-                        <Building2 className="w-4 h-4" />
-                        <span>{selectedSignalement.entreprise}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Extra info */}
-                  <div className="mt-3 pt-3 border-t border-gray-100 grid grid-cols-2 gap-2 text-xs">
-                    <div className="bg-gray-50 rounded p-2">
-                      <span className="text-gray-500">Type</span>
-                      <p className="font-medium text-gray-800">{getTypeLabel(selectedSignalement.typeTravaux)}</p>
-                    </div>
-                    {(selectedSignalement.surfaceM2 !== undefined && selectedSignalement.surfaceM2 !== null) && (
-                      <div className="bg-gray-50 rounded p-2">
-                        <span className="text-gray-500">Surface</span>
-                        <p className="font-medium text-gray-800">{selectedSignalement.surfaceM2} m²</p>
-                      </div>
-                    )}
-                    {(selectedSignalement.budget !== undefined && selectedSignalement.budget !== null) && (
-                      <div className="bg-gray-50 rounded p-2 col-span-2">
-                        <span className="text-gray-500">Budget</span>
-                        <p className="font-medium text-gray-800">{selectedSignalement.budget.toLocaleString()} Ar</p>
-                      </div>
-                    )}
-                  </div>
-    
-                  {selectedSignalement.photos && (
-                    <img
-                      src={selectedSignalement.photos.split(',')[0]}
-                      alt={selectedSignalement.titre}
-                      className="w-full h-28 object-cover rounded-lg mt-3"
-                    />
-                  )}
+                  <DetailSignalement
+                    signalement={selectedSignalement}
+                    showGallery={true}
+                    compact={true}
+                  />
                 </Card>
               )}
 

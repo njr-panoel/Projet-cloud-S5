@@ -34,6 +34,7 @@ export const config = {
       fromFirebase: `${API_URL}/sync/from-firebase`,
       usersToFirebase: `${API_URL}/sync/users-to-firebase`,
       full: `${API_URL}/sync/full`,
+      bidirectional: `${API_URL}/sync/bidirectional`,
       stats: `${API_URL}/sync/stats`,
     },
   },

@@ -15,7 +15,7 @@ const createUserSchema = z.object({
   nom: z.string().min(2, 'Minimum 2 caractères'),
   prenom: z.string().min(2, 'Minimum 2 caractères'),
   telephone: z.string().optional(),
-  role: z.enum(['VISITEUR', 'UTILISATEUR_MOBILE', 'MANAGER']),
+  role: z.enum(['MANAGER', 'UTILISATEUR_MOBILE']),
 });
 
 type CreateUserFormData = z.infer<typeof createUserSchema>;
@@ -38,7 +38,7 @@ export const UsersPage: React.FC = () => {
   } = useForm<CreateUserFormData>({
     resolver: zodResolver(createUserSchema),
     defaultValues: {
-      role: 'UTILISATEUR_MOBILE',
+      role: 'MANAGER',
     },
   });
 
@@ -110,24 +110,29 @@ export const UsersPage: React.FC = () => {
     }
   };
 
-  // Synchroniser les comptes mobiles vers Firebase
+  // Synchroniser les comptes mobiles vers Firebase Auth
   const handleSyncUsersToFirebase = async () => {
     try {
-      await syncService.syncUsersToFirebase();
-      Toast.success('Comptes mobiles synchronisés vers Firebase !');
+      const result = await syncService.syncUsersToFirebase();
+      if (result.syncedCount > 0) {
+        Toast.success(`${result.syncedCount} compte(s) mobile(s) synchronisé(s) vers Firebase Auth !`);
+      } else {
+        Toast.info('Tous les comptes mobiles sont déjà synchronisés avec Firebase.');
+      }
     } catch (error) {
       Toast.error('Erreur lors de la synchronisation vers Firebase');
     }
   };
 
-  const filteredUsers = users.filter((user) => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      user.nom.toLowerCase().includes(searchLower) ||
-      user.prenom.toLowerCase().includes(searchLower) ||
-      user.email.toLowerCase().includes(searchLower)
-    );
-  });
+  const filteredUsers = users
+    .filter((user) => {
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        user.nom.toLowerCase().includes(searchLower) ||
+        user.prenom.toLowerCase().includes(searchLower) ||
+        user.email.toLowerCase().includes(searchLower)
+      );
+    });
 
   const getRoleBadgeVariant = (role: UserRole) => {
     switch (role) {
@@ -193,15 +198,6 @@ export const UsersPage: React.FC = () => {
       header: 'Actions',
       render: (item: User) => (
         <div className="flex items-center gap-2">
-          <select
-            value={item.role}
-            onChange={(e) => handleRoleChange(item.id, e.target.value as UserRole)}
-            className="text-sm border rounded px-2 py-1"
-          >
-            <option value="VISITEUR">Visiteur</option>
-            <option value="UTILISATEUR_MOBILE">Mobile</option>
-            <option value="MANAGER">Manager</option>
-          </select>
           <button
             onClick={() => handleDelete(item)}
             className="p-1.5 text-secondary-500 hover:text-danger-600 hover:bg-danger-50 rounded-lg transition-colors"
@@ -329,22 +325,15 @@ export const UsersPage: React.FC = () => {
             leftIcon={<Phone className="w-5 h-5" />}
           />
           
-          <div>
-            <label className="block text-sm font-medium text-secondary-700 mb-1">
-              Rôle
-            </label>
-            <select
-              {...register('role')}
-              className="w-full px-4 py-2.5 rounded-lg border border-secondary-300 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
-            >
-              <option value="VISITEUR">Visiteur</option>
-              <option value="UTILISATEUR_MOBILE">Utilisateur Mobile</option>
-              <option value="MANAGER">Manager</option>
-            </select>
-            {errors.role && (
-              <p className="mt-1 text-sm text-danger-600">{errors.role.message}</p>
-            )}
-          </div>
+          <Select
+            {...register('role')}
+            label="Rôle"
+            options={[
+              { value: 'MANAGER', label: 'Manager (Web)' },
+              { value: 'UTILISATEUR_MOBILE', label: 'Utilisateur Mobile (App Ionic)' },
+            ]}
+            error={errors.role?.message}
+          />
 
           <ModalFooter>
             <Button variant="secondary" onClick={() => setShowCreateModal(false)}>

@@ -1,10 +1,13 @@
 import React from 'react';
-import { MapPin, Calendar, Tag, Ruler, Banknote, Building2 } from 'lucide-react';
-import { Badge, getStatutBadgeVariant, getStatutLabel, getTypeBadgeVariant, getTypeLabel } from '../ui';
+import { MapPin, Calendar, Tag, Ruler, Banknote, Building2, Camera } from 'lucide-react';
+import { Badge, getStatutBadgeVariant, getStatutLabel, getTypeBadgeVariant, getTypeLabel, Button } from '../ui';
+import { IconTypesTravaux } from '../icons/IconTypesTravaux';
+import { IconStatut } from '../icons/IconStatut';
 import type { Signalement } from '../../types';
 
 interface MapTooltipProps {
   signalement: Signalement;
+  onShowPhotos?: (signalement: Signalement) => void;
 }
 
 // Formater le budget en Ariary
@@ -17,7 +20,7 @@ const formatBudget = (budget: number): string => {
   return `${budget.toLocaleString()} Ar`;
 };
 
-export const MapTooltip: React.FC<MapTooltipProps> = ({ signalement }) => {
+export const MapTooltip: React.FC<MapTooltipProps> = ({ signalement, onShowPhotos }) => {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('fr-FR', {
       day: 'numeric',
@@ -28,13 +31,18 @@ export const MapTooltip: React.FC<MapTooltipProps> = ({ signalement }) => {
 
   return (
     <div className="min-w-[280px] p-2">
-      <div className="flex items-start justify-between gap-2 mb-2">
-        <h3 className="font-semibold text-secondary-800 text-base leading-tight">
-          {signalement.titre}
-        </h3>
-        <Badge variant={getStatutBadgeVariant(signalement.statut)}>
-          {getStatutLabel(signalement.statut)}
-        </Badge>
+      <div className="flex items-start justify-between gap-2 mb-3">
+        <div className="flex-1">
+          <h3 className="font-semibold text-secondary-800 text-base leading-tight">
+            {signalement.titre}
+          </h3>
+        </div>
+        <div className="flex flex-col items-center gap-1">
+          <IconStatut statut={signalement.statut} size="sm" />
+          <Badge variant={getStatutBadgeVariant(signalement.statut)} className="text-xs">
+            {getStatutLabel(signalement.statut)}
+          </Badge>
+        </div>
       </div>
 
       <p className="text-sm text-secondary-600 mb-3 line-clamp-2">
@@ -55,7 +63,7 @@ export const MapTooltip: React.FC<MapTooltipProps> = ({ signalement }) => {
         </div>
 
         <div className="flex items-center gap-1.5">
-          <Tag className="w-3.5 h-3.5" />
+          <IconTypesTravaux type={signalement.typeTravaux} size="sm" />
           <Badge variant={getTypeBadgeVariant(signalement.typeTravaux)} className="text-xs">
             {getTypeLabel(signalement.typeTravaux)}
           </Badge>
@@ -88,32 +96,19 @@ export const MapTooltip: React.FC<MapTooltipProps> = ({ signalement }) => {
 
       {signalement.photos ? (
         <div className="mt-3 pt-2 border-t border-secondary-100">
-          <p className="text-xs text-secondary-500 mb-2 font-medium">📷 Photo de la route concernée :</p>
-          <a 
-            href={signalement.photos.split(',')[0]} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="block"
+          <p className="text-xs text-secondary-500 mb-2 font-medium">📷 Photos:</p>
+          <img
+            src={signalement.photos.split(',')[0]}
+            alt={signalement.titre}
+            className="w-full h-20 object-cover rounded mb-2"
+          />
+          <button
+            onClick={() => onShowPhotos?.(signalement)}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-primary-600 text-white text-xs font-medium rounded hover:bg-primary-700 transition-colors"
           >
-            <img
-              src={signalement.photos.split(',')[0]}
-              alt={signalement.titre}
-              className="w-full h-24 object-cover rounded hover:opacity-80 transition-opacity cursor-pointer"
-            />
-          </a>
-          <a 
-            href={signalement.photos.split(',')[0]} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="block mt-2 text-center text-xs text-primary-600 hover:text-primary-800 font-medium underline"
-          >
-            🔗 Voir la photo en grand
-          </a>
-          {signalement.photos.split(',').length > 1 && (
-            <p className="text-xs text-secondary-500 mt-1 text-center">
-              + {signalement.photos.split(',').length - 1} autre(s) photo(s)
-            </p>
-          )}
+            <Camera className="w-4 h-4" />
+            Voir la galerie ({signalement.photos.split(',').length} photo{signalement.photos.split(',').length > 1 ? 's' : ''})
+          </button>
         </div>
       ) : (
         <div className="mt-3 pt-2 border-t border-secondary-100">
