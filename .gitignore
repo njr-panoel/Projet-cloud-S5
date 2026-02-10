@@ -31,7 +31,7 @@ mobile-app/ios/App/Pods/
 mobile-app/ios/App/App.xcworkspace/
 mobile-app/ios/App/build/
 
-# =========================
+# ========================= 
 # Java Backend
 # =========================
 dev/target/

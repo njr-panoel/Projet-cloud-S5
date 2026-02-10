@@ -6,6 +6,7 @@ import { useNetworkStore } from './network.store';
 import { Signalement, SignalementInput } from '../models/signalement.model';
 import { emptyStats, Stats } from '../models/stats.model';
 import { networkService } from '../services/network.service';
+import { notificationService } from '../services/notification.service';
 
 export const useSignalementStore = defineStore('signalements', {
   state: () => ({ list: [] as Signalement[], loading: false, stats: { ...emptyStats }, center: { lat: -18.8792, lng: 47.5079 }, networkUnsub: null as (() => void) | null }),
@@ -28,6 +29,8 @@ export const useSignalementStore = defineStore('signalements', {
         });
       }
       await this.refresh();
+      // Démarrer la surveillance des changements de statut
+      notificationService.startListening(auth.user.uid);
       this.loading = false;
     },
     async refresh() {
@@ -72,6 +75,7 @@ export const useSignalementStore = defineStore('signalements', {
       this.stats = { total, surfaceTotal, budgetTotal, completion } as Stats;
     },
     $reset() {
+      notificationService.stopListening();
       this.networkUnsub?.();
       this.networkUnsub = null;
       this.list = [];
