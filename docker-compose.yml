@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  # Base de données PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: travaux-routiers-db
+    environment:
+      POSTGRES_DB: travaux_routiers
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./dev/db:/docker-entrypoint-initdb.d
+    networks:
+      - travaux-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Application Spring Boot (Backend)
+  backend:
+    build:
+      context: ./dev
+      dockerfile: Dockerfile
+    container_name: travaux-routiers-api
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/travaux_routiers
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_PROFILES_ACTIVE: prod
+      APP_FIREBASE_ENABLED: "false"
+      APP_SECURITY_JWT_SECRET: "your-super-secret-jwt-key-change-in-production-2024"
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - travaux-network
+    restart: unless-stopped
+
+  # Application React (Frontend)
+  frontend:
+    build:
+      context: .
+      dockerfile: web-app/Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:8080
+        VITE_DATA_SOURCE: api
+    container_name: travaux-routiers-web
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - travaux-network
+    restart: unless-stopped
+
+  # PgAdmin (optionnel)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: travaux-routiers-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@travaux-routiers.mg
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - travaux-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  travaux-network:
+    driver: bridge

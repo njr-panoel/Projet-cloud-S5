@@ -1,4 +1,4 @@
-export type Statut = 'nouveau' | 'en_cours' | 'termine';
+export type Statut = 'nouveau' | 'en_cours' | 'termine' | 'annule';
 
 export interface Signalement {
   id: string;

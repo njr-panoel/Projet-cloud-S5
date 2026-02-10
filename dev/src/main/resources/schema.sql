@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 -- =====================================================
 -- Schema SQL - Travaux Routiers API
 -- PostgreSQL 15
@@ -140,3 +141,5 @@ ON CONFLICT DO NOTHING;
 -- SELECT * FROM signalements;
 -- SELECT * FROM sessions;
 -- SELECT * FROM sync_logs;
+=======
+>>>>>>> Stashed changes
