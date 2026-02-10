@@ -21,17 +21,29 @@ services:
       timeout: 5s
       retries: 5
 
-  # Application Spring Boot
+  # Application Spring Boot - MODIFICATIONS ICI
   app:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: travaux-routiers-api
     environment:
+      # === AJOUTEZ CES 3 LIGNES OBLIGATOIRES ===
+      APP_SECURITY_JWT_SECRET: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+/"
+      APP_SECURITY_JWT_EXPIRATION: "86400000"
+      SPRING_PROFILES_ACTIVE: "docker"
+      # =========================================
+      
+      # Variables existantes (gardez-les)
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/travaux_routiers
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       APP_FIREBASE_ENABLED: "false"
+      
+      # === OPTIONNEL : Ajoutez pour plus de logs ===
+      LOGGING_LEVEL_COM_CLOUD_DEV: "DEBUG"
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: "DEBUG"
+      SPRING_JPA_SHOW_SQL: "true"
     ports:
       - "8080:8080"
     depends_on:
@@ -40,6 +52,13 @@ services:
     networks:
       - travaux-network
     restart: unless-stopped
+    # === AJOUTEZ UN HEALTHCHECK POUR L'API ===
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   # PgAdmin (optionnel - pour gérer la base de données)
   pgadmin:
