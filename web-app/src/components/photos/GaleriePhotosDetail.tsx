@@ -1,11 +1,21 @@
 import React, { useState } from 'react';
-import { X, ChevronLeft, ChevronRight, Download, Maximize2 } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Download, Maximize2, Camera, Construction, CheckCircle } from 'lucide-react';
 import { Button } from '../ui';
 import type { Signalement } from '../../types';
+import { getImagesTypesTravaux, getImagesStatut, typesTravaux, statuts, IMAGES_BASE_PATH } from '../../config/imageMapping';
 
 interface GaleriePhotosDetailProps {
   signalement: Signalement;
   onClose?: () => void;
+}
+
+// Types d'images à afficher
+type PhotoCategory = 'signalement' | 'typeTravaux' | 'statut';
+
+interface PhotoItem {
+  url: string;
+  category: PhotoCategory;
+  label: string;
 }
 
 /**
@@ -18,13 +28,42 @@ export const GaleriePhotosDetail: React.FC<GaleriePhotosDetailProps> = ({
 }) => {
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
   const [fullscreenIndex, setFullscreenIndex] = useState<number | null>(null);
+  const [activeCategory, setActiveCategory] = useState<PhotoCategory | 'all'>('all');
 
-  // Récupérer toutes les photos
-  const photos = signalement.photos
-    ? signalement.photos.split(',').map(p => p.trim()).filter(p => p)
+  // Récupérer les photos du signalement
+  const signalementPhotos: PhotoItem[] = signalement.photos
+    ? signalement.photos.split(',').map(p => p.trim()).filter(p => p).map(url => ({
+        url,
+        category: 'signalement' as PhotoCategory,
+        label: 'Photo du signalement'
+      }))
     : [];
 
-  if (photos.length === 0) {
+  // Récupérer les photos du type de travaux
+  const typeTravauxKey = signalement.typeTravaux as keyof typeof typesTravaux;
+  const typePhotos: PhotoItem[] = getImagesTypesTravaux(typeTravauxKey).map(url => ({
+    url,
+    category: 'typeTravaux' as PhotoCategory,
+    label: `État de la route - ${typesTravaux[typeTravauxKey]?.label || signalement.typeTravaux}`
+  }));
+
+  // Récupérer les photos du statut
+  const statutKey = signalement.statut as keyof typeof statuts;
+  const statutPhotos: PhotoItem[] = getImagesStatut(statutKey).map(url => ({
+    url,
+    category: 'statut' as PhotoCategory,
+    label: `État construction - ${statuts[statutKey]?.label || signalement.statut}`
+  }));
+
+  // Toutes les photos combinées
+  const allPhotos: PhotoItem[] = [...signalementPhotos, ...typePhotos, ...statutPhotos];
+
+  // Filtrer par catégorie
+  const filteredPhotos = activeCategory === 'all' 
+    ? allPhotos 
+    : allPhotos.filter(p => p.category === activeCategory);
+
+  if (allPhotos.length === 0) {
     return (
       <div className="bg-gradient-to-b from-gray-50 to-white rounded-lg shadow-md p-8 text-center">
         <div className="inline-block bg-gray-100 rounded-full p-4 mb-4">
@@ -36,8 +75,8 @@ export const GaleriePhotosDetail: React.FC<GaleriePhotosDetailProps> = ({
     );
   }
 
-  const currentPhoto = photos[selectedPhotoIndex];
-  const photoCount = photos.length;
+  const currentPhoto = filteredPhotos[selectedPhotoIndex] || filteredPhotos[0];
+  const photoCount = filteredPhotos.length;
 
   const handlePrevious = () => {
     setSelectedPhotoIndex((prev) => (prev === 0 ? photoCount - 1 : prev - 1));
@@ -45,6 +84,12 @@ export const GaleriePhotosDetail: React.FC<GaleriePhotosDetailProps> = ({
 
   const handleNext = () => {
     setSelectedPhotoIndex((prev) => (prev === photoCount - 1 ? 0 : prev + 1));
+  };
+
+  // Reset l'index quand on change de catégorie
+  const handleCategoryChange = (category: PhotoCategory | 'all') => {
+    setActiveCategory(category);
+    setSelectedPhotoIndex(0);
   };
 
   // Navigation avec les touches clavier
@@ -58,6 +103,25 @@ export const GaleriePhotosDetail: React.FC<GaleriePhotosDetailProps> = ({
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [photoCount]);
+
+  // Couleurs par catégorie
+  const categoryColors: Record<PhotoCategory, { bg: string; text: string; border: string }> = {
+    signalement: { bg: 'bg-indigo-100', text: 'text-indigo-700', border: 'border-indigo-400' },
+    typeTravaux: { bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-400' },
+    statut: { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-400' },
+  };
+
+  const categoryIcons: Record<PhotoCategory, React.ReactNode> = {
+    signalement: <Camera className="w-4 h-4" />,
+    typeTravaux: <Construction className="w-4 h-4" />,
+    statut: <CheckCircle className="w-4 h-4" />,
+  };
+
+  const categoryLabels: Record<PhotoCategory, string> = {
+    signalement: 'Photos signalement',
+    typeTravaux: 'État de la route',
+    statut: 'État construction',
+  };
 
   return (
     <div className="bg-gradient-to-b from-white to-gray-50 rounded-lg shadow-lg overflow-hidden">
