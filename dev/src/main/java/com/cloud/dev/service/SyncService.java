@@ -460,9 +460,48 @@ public class SyncService {
             signalement.setAdresse((String) fbData.get("adresse"));
         }
         
-        // Photos
+        // Photos - gérer les différents formats depuis Firestore
+        // 1. photos: URLs séparées par virgules (format standard)
+        // 2. photoUrl: URL unique de Firebase Storage
+        // 3. photoBase64: Données base64 pour affichage direct
+        String existingPhotos = signalement.getPhotos();
+        StringBuilder photosBuilder = new StringBuilder();
+        if (existingPhotos != null && !existingPhotos.isEmpty()) {
+            photosBuilder.append(existingPhotos);
+        }
+        
         if (fbData.get("photos") != null) {
-            signalement.setPhotos((String) fbData.get("photos"));
+            String photos = fbData.get("photos").toString();
+            if (!photos.isEmpty()) {
+                if (photosBuilder.length() > 0) photosBuilder.append(",");
+                photosBuilder.append(photos);
+            }
+        }
+        
+        if (fbData.get("photoUrl") != null) {
+            String photoUrl = (String) fbData.get("photoUrl");
+            if (photoUrl != null && !photoUrl.isEmpty() && !photosBuilder.toString().contains(photoUrl)) {
+                if (photosBuilder.length() > 0) photosBuilder.append(",");
+                photosBuilder.append(photoUrl);
+            }
+        }
+        
+        if (fbData.get("photoBase64") != null) {
+            String photoBase64 = (String) fbData.get("photoBase64");
+            if (photoBase64 != null && !photoBase64.isEmpty()) {
+                // Stocker le base64 avec le préfixe data: si pas déjà présent
+                if (!photoBase64.startsWith("data:")) {
+                    photoBase64 = "data:image/jpeg;base64," + photoBase64;
+                }
+                if (!photosBuilder.toString().contains(photoBase64.substring(0, Math.min(50, photoBase64.length())))) {
+                    if (photosBuilder.length() > 0) photosBuilder.append(",");
+                    photosBuilder.append(photoBase64);
+                }
+            }
+        }
+        
+        if (photosBuilder.length() > 0) {
+            signalement.setPhotos(photosBuilder.toString());
         }
         
         // Informations complémentaires

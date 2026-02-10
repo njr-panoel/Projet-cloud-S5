@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { X, ChevronLeft, ChevronRight, Download, Maximize2, Camera, Construction, CheckCircle } from 'lucide-react';
-import { Button } from '../ui';
 import type { Signalement } from '../../types';
-import { getImagesTypesTravaux, getImagesStatut, typesTravaux, statuts, IMAGES_BASE_PATH } from '../../config/imageMapping';
+import { getImagesTypesTravaux, getImagesStatut, typesTravaux, statuts } from '../../config/imageMapping';
 
 interface GaleriePhotosDetailProps {
   signalement: Signalement;
@@ -79,11 +78,15 @@ export const GaleriePhotosDetail: React.FC<GaleriePhotosDetailProps> = ({
   const photoCount = filteredPhotos.length;
 
   const handlePrevious = () => {
-    setSelectedPhotoIndex((prev) => (prev === 0 ? photoCount - 1 : prev - 1));
+    const newIndex = selectedPhotoIndex === 0 ? photoCount - 1 : selectedPhotoIndex - 1;
+    setSelectedPhotoIndex(newIndex);
+    if (fullscreenIndex !== null) setFullscreenIndex(newIndex);
   };
 
   const handleNext = () => {
-    setSelectedPhotoIndex((prev) => (prev === photoCount - 1 ? 0 : prev + 1));
+    const newIndex = selectedPhotoIndex === photoCount - 1 ? 0 : selectedPhotoIndex + 1;
+    setSelectedPhotoIndex(newIndex);
+    if (fullscreenIndex !== null) setFullscreenIndex(newIndex);
   };
 
   // Reset l'index quand on change de catégorie
@@ -143,6 +146,57 @@ export const GaleriePhotosDetail: React.FC<GaleriePhotosDetailProps> = ({
         </div>
       </div>
 
+      {/* Filtres de catégories */}
+      <div className="px-6 py-3 bg-gray-100 border-b flex flex-wrap gap-2">
+        <button
+          onClick={() => handleCategoryChange('all')}
+          className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-full transition-all ${
+            activeCategory === 'all' ? 'bg-gray-800 text-white' : 'bg-white text-gray-600 border hover:bg-gray-50'
+          }`}
+        >
+          Toutes ({allPhotos.length})
+        </button>
+        {signalementPhotos.length > 0 && (
+          <button
+            onClick={() => handleCategoryChange('signalement')}
+            className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-full transition-all ${
+              activeCategory === 'signalement' 
+                ? `${categoryColors.signalement.bg} ${categoryColors.signalement.text} font-medium`
+                : 'bg-white text-gray-600 border hover:bg-gray-50'
+            }`}
+          >
+            {categoryIcons.signalement}
+            {categoryLabels.signalement} ({signalementPhotos.length})
+          </button>
+        )}
+        {typePhotos.length > 0 && (
+          <button
+            onClick={() => handleCategoryChange('typeTravaux')}
+            className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-full transition-all ${
+              activeCategory === 'typeTravaux'
+                ? `${categoryColors.typeTravaux.bg} ${categoryColors.typeTravaux.text} font-medium`
+                : 'bg-white text-gray-600 border hover:bg-gray-50'
+            }`}
+          >
+            {categoryIcons.typeTravaux}
+            {categoryLabels.typeTravaux} ({typePhotos.length})
+          </button>
+        )}
+        {statutPhotos.length > 0 && (
+          <button
+            onClick={() => handleCategoryChange('statut')}
+            className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-full transition-all ${
+              activeCategory === 'statut'
+                ? `${categoryColors.statut.bg} ${categoryColors.statut.text} font-medium`
+                : 'bg-white text-gray-600 border hover:bg-gray-50'
+            }`}
+          >
+            {categoryIcons.statut}
+            {categoryLabels.statut} ({statutPhotos.length})
+          </button>
+        )}
+      </div>
+
       {/* Main Content */}
       <div className="p-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -152,8 +206,8 @@ export const GaleriePhotosDetail: React.FC<GaleriePhotosDetailProps> = ({
               {/* Photo affichée */}
               <div className="relative bg-black rounded-lg overflow-hidden aspect-video">
                 <img
-                  src={currentPhoto}
-                  alt={`Photo ${selectedPhotoIndex + 1}`}
+                  src={currentPhoto.url}
+                  alt={currentPhoto.label || `Photo ${selectedPhotoIndex + 1}`}
                   className="w-full h-full object-contain"
                 />
                 {/* Bouton plein écran */}
@@ -196,7 +250,7 @@ export const GaleriePhotosDetail: React.FC<GaleriePhotosDetailProps> = ({
                   <p className="text-xs text-gray-500 mt-1">Utilisez les flèches (← →) pour naviguer ou Esc pour quitter le plein écran</p>
                 </div>
                 <a
-                  href={currentPhoto}
+                  href={currentPhoto.url}
                   download
                   className="flex items-center gap-2 px-3 py-2 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700 transition-colors"
                 >
@@ -210,7 +264,7 @@ export const GaleriePhotosDetail: React.FC<GaleriePhotosDetailProps> = ({
                 <div className="space-y-3">
                   <p className="text-sm font-semibold text-gray-700">Autres photos</p>
                   <div className="grid grid-cols-4 gap-3">
-                    {photos.map((photo, index) => (
+                    {filteredPhotos.map((photo, index) => (
                       <button
                         key={index}
                         onClick={() => setSelectedPhotoIndex(index)}
@@ -221,8 +275,8 @@ export const GaleriePhotosDetail: React.FC<GaleriePhotosDetailProps> = ({
                         }`}
                       >
                         <img
-                          src={photo}
-                          alt={`Thumbnail ${index + 1}`}
+                          src={photo.url}
+                          alt={photo.label || `Thumbnail ${index + 1}`}
                           className="w-full h-full object-cover"
                         />
                         {index === selectedPhotoIndex && (
@@ -306,8 +360,8 @@ export const GaleriePhotosDetail: React.FC<GaleriePhotosDetailProps> = ({
         >
           <div className="relative w-full h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
             <img
-              src={photos[fullscreenIndex]}
-              alt="Full screen"
+              src={filteredPhotos[fullscreenIndex]?.url || ''}
+              alt={filteredPhotos[fullscreenIndex]?.label || "Full screen"}
               className="max-w-full max-h-full object-contain"
             />
 
