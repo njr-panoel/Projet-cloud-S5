@@ -11,6 +11,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 
 import { AuthService } from '../../../core/services/auth.service';
 import { MapService } from '../../../core/services/map.service';
@@ -29,34 +30,43 @@ import { GeocodingService } from '../services/geocoding.service';
     MatInputModule,
     MatListModule,
     MatButtonModule,
+    MatIconModule,
     MapComponent
   ],
   template: `
-    <div style="display:flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
-      <h1 style="margin: 0;">Carte des signalements</h1>
-      <div style="display:flex; gap: 10px; flex-wrap: wrap;">
-        <a mat-stroked-button routerLink="/signalements">Liste</a>
+    <div class="ri-page-header">
+      <h1>Carte des signalements</h1>
+      <div class="ri-page-actions">
+        <a mat-stroked-button routerLink="/signalements">
+          <mat-icon>list_alt</mat-icon> Liste
+        </a>
         @if (canReport()) {
-          <a mat-raised-button color="primary" routerLink="/signaler">Signaler</a>
+          <a mat-raised-button color="primary" routerLink="/signaler">
+            <mat-icon>add_location_alt</mat-icon> Signaler
+          </a>
         } @else {
           <a mat-raised-button color="primary" routerLink="/auth/login">Connexion</a>
         }
       </div>
     </div>
 
-    <mat-card style="margin-bottom: 12px;">
+    <mat-card style="margin-bottom: 16px;">
       <mat-card-content>
         <div style="width: 100%; max-width: 560px;">
           <mat-form-field appearance="outline" style="width: 100%">
             <mat-label>Rechercher une localisation</mat-label>
+            <mat-icon matPrefix style="margin-right: 8px; color: var(--ri-text-tertiary);">search</mat-icon>
             <input matInput [formControl]="query" placeholder="Ex: Analakely, Antananarivo" />
           </mat-form-field>
 
           @if (results$ | async; as results) {
             @if (results.length > 0) {
-              <mat-nav-list>
+              <mat-nav-list style="margin-top: -8px;">
                 @for (r of results; track r.label) {
-                  <a mat-list-item (click)="select(r)">{{ r.label }}</a>
+                  <a mat-list-item (click)="select(r)">
+                    <mat-icon matListItemIcon style="color: var(--ri-text-tertiary);">place</mat-icon>
+                    {{ r.label }}
+                  </a>
                 }
               </mat-nav-list>
             }
@@ -68,15 +78,21 @@ import { GeocodingService } from '../services/geocoding.service';
     <app-map (locationSelected)="onLocationSelected($event)" />
 
     @if (picked) {
-      <mat-card style="margin-top: 12px;">
-        <mat-card-content style="display:flex; align-items:center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+      <mat-card style="margin-top: 16px;" class="ri-animate-in">
+        <mat-card-content style="display:flex; align-items:center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
           <div>
-            <div style="font-weight: 600;">Position sélectionnée</div>
-            <div style="opacity: .85; font-size: 13px;">Lat: {{ picked.lat.toFixed(6) }} | Lon: {{ picked.lon.toFixed(6) }}</div>
+            <div style="font-weight: 700; font-size: 15px; margin-bottom: 4px;">
+              <mat-icon style="vertical-align: middle; font-size: 18px; margin-right: 6px; color: var(--ri-primary);">place</mat-icon>
+              Position sélectionnée
+            </div>
+            <div style="color: var(--ri-text-secondary); font-size: 13px;">
+              Lat: {{ picked.lat.toFixed(6) }} | Lon: {{ picked.lon.toFixed(6) }}
+            </div>
           </div>
 
           @if (canReport()) {
             <button mat-raised-button color="primary" type="button" (click)="startReportFromPicked()">
+              <mat-icon>add_location_alt</mat-icon>
               Créer un signalement ici
             </button>
           } @else {

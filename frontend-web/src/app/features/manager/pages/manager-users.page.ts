@@ -7,6 +7,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -28,6 +29,7 @@ import { UserDto, UserRole } from '../../../models/user.models';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
+    MatIconModule,
     MatSelectModule,
     MatTableModule,
     MatSortModule,
@@ -35,12 +37,14 @@ import { UserDto, UserRole } from '../../../models/user.models';
     MatProgressSpinnerModule
   ],
   template: `
-    <h1>Gestion des utilisateurs</h1>
+    <div class="ri-page-header">
+      <h1>Gestion des utilisateurs</h1>
+    </div>
 
-    <mat-card style="margin-bottom: 12px;">
-      <mat-card-title>Créer un compte</mat-card-title>
+    <mat-card style="margin-bottom: 16px;" class="ri-animate-in">
+      <mat-card-title><mat-icon style="vertical-align: middle; margin-right: 8px;">person_add</mat-icon>Créer un compte</mat-card-title>
       <mat-card-content>
-        <form [formGroup]="createForm" (ngSubmit)="create()" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
+        <form [formGroup]="createForm" (ngSubmit)="create()" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0 16px;">
           <mat-form-field appearance="outline">
             <mat-label>Email</mat-label>
             <input matInput type="email" formControlName="email" autocomplete="email" />
@@ -75,8 +79,10 @@ import { UserDto, UserRole } from '../../../models/user.models';
             </mat-select>
           </mat-form-field>
 
-          <div style="display:flex; gap: 10px; align-items:center; flex-wrap: wrap;">
-            <button mat-raised-button color="primary" type="submit" [disabled]="createForm.invalid || loading">Créer</button>
+          <div style="display:flex; gap: 12px; align-items:center; flex-wrap: wrap;">
+            <button mat-raised-button color="primary" type="submit" [disabled]="createForm.invalid || loading">
+              <mat-icon>add</mat-icon> Créer
+            </button>
             @if (loading) {
               <mat-progress-spinner diameter="18" mode="indeterminate" />
             }
@@ -85,12 +91,13 @@ import { UserDto, UserRole } from '../../../models/user.models';
       </mat-card-content>
     </mat-card>
 
-    <mat-card>
-      <mat-card-title>Liste utilisateurs</mat-card-title>
+    <mat-card class="ri-animate-in">
+      <mat-card-title><mat-icon style="vertical-align: middle; margin-right: 8px;">group</mat-icon>Liste utilisateurs</mat-card-title>
       <mat-card-content>
-        <div style="display:flex; gap: 10px; flex-wrap: wrap; align-items:center;">
+        <div class="ri-filter-bar">
           <mat-form-field appearance="outline">
             <mat-label>Recherche</mat-label>
+            <mat-icon matPrefix>search</mat-icon>
             <input matInput [formControl]="searchCtrl" placeholder="Email, nom, prénom…" />
           </mat-form-field>
 
@@ -113,15 +120,19 @@ import { UserDto, UserRole } from '../../../models/user.models';
             </mat-select>
           </mat-form-field>
 
-          <button mat-stroked-button type="button" (click)="refresh()" [disabled]="loading">Rafraîchir</button>
-          <button mat-stroked-button type="button" (click)="export()" [disabled]="loading">Exporter (.xlsx)</button>
+          <button mat-stroked-button type="button" (click)="refresh()" [disabled]="loading">
+            <mat-icon>refresh</mat-icon> Rafraîchir
+          </button>
+          <button mat-stroked-button type="button" (click)="export()" [disabled]="loading">
+            <mat-icon>download</mat-icon> Exporter (.xlsx)
+          </button>
         </div>
 
         <div style="margin-top: 12px; display:flex; align-items:center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
           <div><strong>Résultats:</strong> {{ dataSource.filteredData.length }}</div>
         </div>
 
-        <div style="overflow:auto; margin-top: 12px;">
+        <div class="ri-table-container">
           <table mat-table [dataSource]="dataSource" matSort>
             <ng-container matColumnDef="id">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
@@ -161,9 +172,13 @@ import { UserDto, UserRole } from '../../../models/user.models';
               <td mat-cell *matCellDef="let u">
                 <div style="display:flex; gap: 8px; flex-wrap: wrap;">
                   @if (u.accountLocked) {
-                    <button mat-button type="button" (click)="unlock(u)">Débloquer</button>
+                    <button mat-button type="button" (click)="unlock(u)">
+                      <mat-icon>lock_open</mat-icon> Débloquer
+                    </button>
                   }
-                  <button mat-button type="button" (click)="remove(u)">Supprimer</button>
+                  <button mat-button color="warn" type="button" (click)="remove(u)">
+                    <mat-icon>delete</mat-icon> Supprimer
+                  </button>
                 </div>
               </td>
             </ng-container>

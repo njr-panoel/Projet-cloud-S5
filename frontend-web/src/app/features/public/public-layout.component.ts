@@ -9,6 +9,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatDividerModule } from '@angular/material/divider';
 
 import { AuthService } from '../../core/services/auth.service';
 import { ThemeService } from '../../core/services/theme.service';
@@ -24,45 +25,59 @@ import { ThemeService } from '../../core/services/theme.service';
     MatToolbarModule,
     MatButtonModule,
     MatIconModule,
-    MatMenuModule
+    MatMenuModule,
+    MatDividerModule
   ],
   template: `
     <div class="app-public">
-      <mat-toolbar color="primary" class="app-toolbar">
+      <mat-toolbar class="app-toolbar">
         <span class="app-title">Road Issues</span>
         <span style="flex: 1 1 auto"></span>
         @if (!isMobile()) {
           <a mat-button routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+            <mat-icon aria-hidden="true">dashboard</mat-icon>
             Tableau de bord
           </a>
-          <a mat-button routerLink="/carte" routerLinkActive="active">Carte</a>
-          <a mat-button routerLink="/signalements" routerLinkActive="active">Signalements</a>
+          <a mat-button routerLink="/carte" routerLinkActive="active">
+            <mat-icon aria-hidden="true">map</mat-icon>
+            Carte
+          </a>
+          <a mat-button routerLink="/signalements" routerLinkActive="active">
+            <mat-icon aria-hidden="true">list_alt</mat-icon>
+            Signalements
+          </a>
 
           @if (canReport()) {
-            <a mat-button routerLink="/signaler" routerLinkActive="active">Signaler</a>
+            <a mat-button routerLink="/signaler" routerLinkActive="active">
+              <mat-icon aria-hidden="true">add_location_alt</mat-icon>
+              Signaler
+            </a>
           }
 
           @if (isManager()) {
-            <a mat-button routerLink="/manager" routerLinkActive="active">Manager</a>
+            <a mat-button routerLink="/manager" routerLinkActive="active">
+              <mat-icon aria-hidden="true">admin_panel_settings</mat-icon>
+              Manager
+            </a>
           }
+
+          <span style="width: 1px; height: 24px; background: var(--ri-border); margin: 0 4px;"></span>
 
           @if (!isAuthenticated()) {
             <a mat-button routerLink="/auth/login" routerLinkActive="active">Connexion</a>
-            <a mat-button routerLink="/auth/register" routerLinkActive="active">Inscription</a>
+            <a mat-raised-button color="primary" routerLink="/auth/register" routerLinkActive="active" style="margin-left: 4px;">Inscription</a>
           } @else {
-            <button mat-button type="button" (click)="auth.logout()" aria-label="Se déconnecter">Déconnexion</button>
+            <button mat-button type="button" (click)="auth.logout()" aria-label="Se déconnecter">
+              <mat-icon aria-hidden="true">logout</mat-icon>
+              Déconnexion
+            </button>
           }
         } @else {
           <button mat-icon-button [matMenuTriggerFor]="menu" type="button" aria-label="Ouvrir le menu">
             <mat-icon aria-hidden="true">menu</mat-icon>
           </button>
           <mat-menu #menu="matMenu">
-            <a
-              mat-menu-item
-              routerLink="/"
-              routerLinkActive="active"
-              [routerLinkActiveOptions]="{ exact: true }"
-            >
+            <a mat-menu-item routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
               <mat-icon aria-hidden="true">dashboard</mat-icon>
               <span>Tableau de bord</span>
             </a>
@@ -71,7 +86,7 @@ import { ThemeService } from '../../core/services/theme.service';
               <span>Carte</span>
             </a>
             <a mat-menu-item routerLink="/signalements" routerLinkActive="active">
-              <mat-icon aria-hidden="true">list</mat-icon>
+              <mat-icon aria-hidden="true">list_alt</mat-icon>
               <span>Signalements</span>
             </a>
 
@@ -88,6 +103,8 @@ import { ThemeService } from '../../core/services/theme.service';
                 <span>Manager</span>
               </a>
             }
+
+            <mat-divider />
 
             @if (!isAuthenticated()) {
               <a mat-menu-item routerLink="/auth/login" routerLinkActive="active">
@@ -117,7 +134,7 @@ import { ThemeService } from '../../core/services/theme.service';
       </main>
 
       <footer class="app-footer">
-        <div> Road Issues</div>
+        <span>&copy; 2026 Road Issues &mdash; Suivi des travaux routiers</span>
       </footer>
     </div>
   `

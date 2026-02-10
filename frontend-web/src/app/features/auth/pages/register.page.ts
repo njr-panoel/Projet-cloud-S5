@@ -25,79 +25,90 @@ import { AuthService } from '../../../core/services/auth.service';
     MatProgressSpinnerModule
   ],
   template: `
-    <h1>Créer un compte</h1>
+    <div class="ri-auth-container">
+      <mat-card class="ri-auth-card" style="max-width: 560px;">
+        <mat-card-content>
+          <div class="ri-auth-header">
+            <h1>Créer un compte</h1>
+            <p>Rejoignez la plateforme de suivi</p>
+          </div>
 
-    <mat-card style="width: 100%; max-width: 560px; margin: 0 auto;">
-      <mat-card-content>
-        <form [formGroup]="form" (ngSubmit)="submit()">
-          <mat-form-field appearance="outline" style="width: 100%">
-            <mat-label>Nom</mat-label>
-            <input matInput formControlName="nom" autocomplete="name" />
-            @if (form.controls.nom.touched && form.controls.nom.invalid) {
-              <mat-error>
-                @if (form.controls.nom.errors?.['required']) { Nom requis. }
-                @if (form.controls.nom.errors?.['minlength']) { Nom trop court (min 2). }
-              </mat-error>
+          <form [formGroup]="form" (ngSubmit)="submit()">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px;">
+              <mat-form-field appearance="outline" style="width: 100%">
+                <mat-label>Nom</mat-label>
+                <input matInput formControlName="nom" autocomplete="name" />
+                @if (form.controls.nom.touched && form.controls.nom.invalid) {
+                  <mat-error>
+                    @if (form.controls.nom.errors?.['required']) { Nom requis. }
+                    @if (form.controls.nom.errors?.['minlength']) { Min 2 car. }
+                  </mat-error>
+                }
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" style="width: 100%">
+                <mat-label>Prénom</mat-label>
+                <input matInput formControlName="prenom" autocomplete="given-name" />
+                @if (form.controls.prenom.touched && form.controls.prenom.invalid) {
+                  <mat-error>
+                    @if (form.controls.prenom.errors?.['required']) { Prénom requis. }
+                    @if (form.controls.prenom.errors?.['minlength']) { Min 2 car. }
+                  </mat-error>
+                }
+              </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline" style="width: 100%">
+              <mat-label>Email</mat-label>
+              <input matInput type="email" formControlName="email" autocomplete="email" placeholder="vous@exemple.com" />
+              @if (form.controls.email.touched && form.controls.email.invalid) {
+                <mat-error>
+                  @if (form.controls.email.errors?.['required']) { Email requis. }
+                  @if (form.controls.email.errors?.['email']) { Email invalide. }
+                </mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" style="width: 100%">
+              <mat-label>Profil</mat-label>
+              <mat-select formControlName="role">
+                <mat-option value="VISITEUR">Visiteur (lecture seule)</mat-option>
+                <mat-option value="UTILISATEUR_MOBILE">Utilisateur (peut signaler)</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" style="width: 100%">
+              <mat-label>Mot de passe</mat-label>
+              <input matInput type="password" formControlName="password" autocomplete="new-password" />
+              @if (form.controls.password.touched && form.controls.password.invalid) {
+                <mat-error>
+                  @if (form.controls.password.errors?.['required']) { Mot de passe requis. }
+                  @if (form.controls.password.errors?.['minlength']) { Minimum 6 caractères. }
+                </mat-error>
+              }
+            </mat-form-field>
+
+            @if (errorMessage) {
+              <div class="ri-error-message">{{ errorMessage }}</div>
             }
-          </mat-form-field>
 
-          <mat-form-field appearance="outline" style="width: 100%">
-            <mat-label>Prénom</mat-label>
-            <input matInput formControlName="prenom" autocomplete="given-name" />
-            @if (form.controls.prenom.touched && form.controls.prenom.invalid) {
-              <mat-error>
-                @if (form.controls.prenom.errors?.['required']) { Prénom requis. }
-                @if (form.controls.prenom.errors?.['minlength']) { Prénom trop court (min 2). }
-              </mat-error>
-            }
-          </mat-form-field>
+            <div class="ri-auth-actions">
+              <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || loading">
+                @if (loading) {
+                  <mat-progress-spinner diameter="18" mode="indeterminate" />
+                } @else {
+                  S'inscrire
+                }
+              </button>
 
-          <mat-form-field appearance="outline" style="width: 100%">
-            <mat-label>Email</mat-label>
-            <input matInput type="email" formControlName="email" autocomplete="email" />
-            @if (form.controls.email.touched && form.controls.email.invalid) {
-              <mat-error>
-                @if (form.controls.email.errors?.['required']) { Email requis. }
-                @if (form.controls.email.errors?.['email']) { Email invalide. }
-              </mat-error>
-            }
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" style="width: 100%">
-            <mat-label>Profil</mat-label>
-            <mat-select formControlName="role">
-              <mat-option value="VISITEUR">Visiteur (lecture seule)</mat-option>
-              <mat-option value="UTILISATEUR_MOBILE">Utilisateur (peut signaler)</mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" style="width: 100%">
-            <mat-label>Mot de passe</mat-label>
-            <input matInput type="password" formControlName="password" autocomplete="new-password" />
-            @if (form.controls.password.touched && form.controls.password.invalid) {
-              <mat-error>
-                @if (form.controls.password.errors?.['required']) { Mot de passe requis. }
-                @if (form.controls.password.errors?.['minlength']) { Minimum 6 caractères. }
-              </mat-error>
-            }
-          </mat-form-field>
-
-          @if (errorMessage) {
-            <div style="color: #b00020; margin-bottom: 12px;">{{ errorMessage }}</div>
-          }
-
-          <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || loading">
-            @if (loading) {
-              <mat-progress-spinner diameter="18" mode="indeterminate" />
-            } @else {
-              S'inscrire
-            }
-          </button>
-
-          <a mat-button routerLink="/auth/login" type="button">Déjà un compte ?</a>
-        </form>
-      </mat-card-content>
-    </mat-card>
+              <a mat-button routerLink="/auth/login" type="button" style="text-align: center;">
+                Déjà un compte ? <strong>Se connecter</strong>
+              </a>
+            </div>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    </div>
   `
 })
 export class RegisterPage {

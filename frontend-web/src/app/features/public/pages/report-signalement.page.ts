@@ -9,6 +9,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { SignalementsService } from '../../../core/services/signalements.service';
@@ -25,26 +26,30 @@ import { TypeTravaux } from '../../../models/signalement.models';
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
+    MatIconModule,
     MatButtonModule,
     MatProgressSpinnerModule
   ],
   template: `
-    <div style="display:flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
-      <h1 style="margin: 0;">Créer un signalement</h1>
-      <div style="display:flex; gap: 10px; flex-wrap: wrap;">
-        <a mat-stroked-button routerLink="/signalements">Retour liste</a>
-        <a mat-stroked-button routerLink="/carte">Carte</a>
+    <div class="ri-page-header">
+      <h1>Créer un signalement</h1>
+      <div class="ri-page-actions">
+        <a mat-stroked-button routerLink="/signalements">
+          <mat-icon>arrow_back</mat-icon> Retour liste
+        </a>
+        <a mat-stroked-button routerLink="/carte">
+          <mat-icon>map</mat-icon> Carte
+        </a>
       </div>
     </div>
 
     <mat-card>
       <mat-card-content>
         <form [formGroup]="form" (ngSubmit)="submit()">
-
-          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px;">
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0 16px;">
             <mat-form-field appearance="outline" style="width: 100%">
               <mat-label>Titre</mat-label>
-              <input matInput formControlName="titre" autocomplete="off" />
+              <input matInput formControlName="titre" autocomplete="off" placeholder="Ex: Nid de poule rue..." />
               @if (form.controls.titre.touched && form.controls.titre.invalid) {
                 <mat-error>Titre requis.</mat-error>
               }
@@ -89,17 +94,17 @@ import { TypeTravaux } from '../../../models/signalement.models';
             </mat-form-field>
           </div>
 
-          <mat-form-field appearance="outline" style="width: 100%; margin-top: 12px;">
+          <mat-form-field appearance="outline" style="width: 100%; margin-top: 4px;">
             <mat-label>Description</mat-label>
-            <textarea matInput rows="4" formControlName="description"></textarea>
+            <textarea matInput rows="4" formControlName="description" placeholder="Décrivez le problème..."></textarea>
           </mat-form-field>
 
-          <div style="display:flex; gap: 10px; flex-wrap: wrap; margin-top: 12px;">
+          <div style="display:flex; gap: 12px; flex-wrap: wrap; margin-top: 8px;">
             <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || loading">
               @if (loading) {
                 <mat-progress-spinner diameter="18" mode="indeterminate" />
               } @else {
-                Envoyer
+                <ng-container><mat-icon>send</mat-icon> Envoyer</ng-container>
               }
             </button>
             <button mat-stroked-button type="button" (click)="cancel()" [disabled]="loading">Annuler</button>

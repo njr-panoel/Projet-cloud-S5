@@ -1,9 +1,5 @@
 
 // Include theming for Angular Material with `mat.theme()`.
-// This Sass mixin will define CSS variables that are used for styling Angular Material
-// components according to the Material 3 design spec.
-// Learn more about theming and how to use it for your application's
-// custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
 
 html {
@@ -15,16 +11,42 @@ html {
         primary: mat.$azure-palette,
         tertiary: mat.$green-palette
       ),
-      typography: Roboto,
+      typography: Inter,
       density: 0
     )
   );
 
-  --ri-primary: #1976d2;
-  --ri-secondary: #388e3c;
-  --ri-warning: #f57c00;
-  --ri-success: #388e3c;
-  --ri-danger: #d32f2f;
+  --ri-primary: #2563eb;
+  --ri-primary-light: #dbeafe;
+  --ri-primary-dark: #1d4ed8;
+  --ri-secondary: #059669;
+  --ri-secondary-light: #d1fae5;
+  --ri-warning: #ea580c;
+  --ri-warning-light: #ffedd5;
+  --ri-success: #059669;
+  --ri-success-light: #d1fae5;
+  --ri-danger: #dc2626;
+  --ri-danger-light: #fee2e2;
+
+  --ri-surface: #ffffff;
+  --ri-surface-variant: #f8fafc;
+  --ri-surface-elevated: #ffffff;
+  --ri-border: #e2e8f0;
+  --ri-border-light: #f1f5f9;
+  --ri-text: #0f172a;
+  --ri-text-secondary: #64748b;
+  --ri-text-tertiary: #94a3b8;
+
+  --ri-shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --ri-shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --ri-shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.06), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --ri-shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+  --ri-shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+
+  --ri-radius-sm: 8px;
+  --ri-radius-md: 12px;
+  --ri-radius-lg: 16px;
+  --ri-radius-xl: 20px;
 
   --mat-sys-primary: var(--ri-primary);
   --mat-sys-on-primary: #ffffff;
@@ -42,10 +64,37 @@ html.dark {
         primary: mat.$azure-palette,
         tertiary: mat.$green-palette
       ),
-      typography: Roboto,
+      typography: Inter,
       density: 0
     )
   );
+
+  --ri-primary: #3b82f6;
+  --ri-primary-light: rgba(59, 130, 246, 0.15);
+  --ri-primary-dark: #60a5fa;
+  --ri-secondary: #34d399;
+  --ri-secondary-light: rgba(52, 211, 153, 0.15);
+  --ri-warning: #fb923c;
+  --ri-warning-light: rgba(251, 146, 60, 0.15);
+  --ri-success: #34d399;
+  --ri-success-light: rgba(52, 211, 153, 0.15);
+  --ri-danger: #f87171;
+  --ri-danger-light: rgba(248, 113, 113, 0.15);
+
+  --ri-surface: #0f172a;
+  --ri-surface-variant: #1e293b;
+  --ri-surface-elevated: #1e293b;
+  --ri-border: #334155;
+  --ri-border-light: #1e293b;
+  --ri-text: #f1f5f9;
+  --ri-text-secondary: #94a3b8;
+  --ri-text-tertiary: #64748b;
+
+  --ri-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --ri-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --ri-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+  --ri-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
+  --ri-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
 
   --mat-sys-primary: var(--ri-primary);
   --mat-sys-on-primary: #ffffff;
@@ -56,19 +105,15 @@ html.dark {
 }
 
 body {
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
   color-scheme: light;
-
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
-  font: var(--mat-sys-body-medium);
-
-  // Reset the user agent margin.
+  background-color: var(--ri-surface-variant);
+  color: var(--ri-text);
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  letter-spacing: -0.006em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   margin: 0;
   height: 100%;
 }
@@ -76,114 +121,303 @@ body {
 html.dark body {
   color-scheme: dark;
 }
-/* You can add global styles to this file, and also import other style files */
 
 @import 'leaflet/dist/leaflet.css';
 
-body {
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+// ─── Typography ───
+h1 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--ri-text);
+  line-height: 1.2;
 }
 
+h2, .mat-mdc-card-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--ri-text);
+}
+
+// ─── Page Headers ───
+.ri-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.ri-page-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+// ─── Active Link ───
 .active {
   font-weight: 600;
-}
-
-.app-shell {
-  height: 100vh;
-  background: linear-gradient(180deg, rgba(2, 132, 199, 0.06) 0%, rgba(2, 132, 199, 0.02) 38%, rgba(0, 0, 0, 0) 100%);
-}
-
-html.dark .app-shell {
-  background: linear-gradient(180deg, rgba(25, 118, 210, 0.14) 0%, rgba(25, 118, 210, 0.05) 38%, rgba(0, 0, 0, 0) 100%);
-}
-
-.app-sidenav {
-  width: 260px;
-  border-right: 1px solid rgba(0, 0, 0, 0.06);
-  background: #ffffff;
-}
-
-html.dark .app-sidenav {
-  background: var(--mat-sys-surface);
-}
-
-.app-brand {
-  padding: 16px;
-  font-weight: 800;
-  letter-spacing: 0.4px;
-  color: #0f172a;
-}
-
-html.dark .app-brand {
-  color: var(--mat-sys-on-surface);
-}
-
-.app-sidenav-footer {
-  padding: 12px 16px 16px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.app-toolbar {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.06), 0 6px 20px rgba(15, 23, 42, 0.08);
-}
-
-.app-title {
-  font-weight: 700;
-}
-
-.app-public {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.app-content {
-  flex: 1 1 auto;
-  padding: 20px;
-}
-
-.app-footer {
-  padding: 16px 20px;
-  color: rgba(15, 23, 42, 0.7);
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 a.active {
   color: var(--ri-primary);
 }
 
+// ─── App Shell ───
+.app-shell {
+  height: 100vh;
+  background: var(--ri-surface-variant);
+}
+
+// ─── Sidenav ───
+.app-sidenav {
+  width: 272px;
+  border-right: 1px solid var(--ri-border);
+  background: var(--ri-surface);
+  display: flex;
+  flex-direction: column;
+}
+
+.app-brand {
+  padding: 24px 20px 20px;
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+  color: var(--ri-text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--ri-primary);
+    box-shadow: 0 0 0 3px var(--ri-primary-light);
+  }
+}
+
+.app-sidenav-footer {
+  margin-top: auto;
+  padding: 16px 20px 20px;
+  border-top: 1px solid var(--ri-border);
+}
+
+// ─── Sidenav Active Items ───
 .mat-mdc-list-item.active,
 .mat-mdc-list-item.active .mdc-list-item__primary-text {
   color: var(--ri-primary);
+  font-weight: 600;
 }
 
 .mat-mdc-list-item.active {
-  background: rgba(2, 132, 199, 0.12);
-  border-radius: 10px;
-  margin: 4px 10px;
+  background: var(--ri-primary-light);
+  border-radius: var(--ri-radius-md);
+  margin: 4px 12px;
 }
 
 html.dark .mat-mdc-list-item.active {
-  background: rgba(25, 118, 210, 0.22);
+  background: var(--ri-primary-light);
 }
 
+// ─── Toolbar ───
+.app-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--ri-surface) !important;
+  color: var(--ri-text) !important;
+  border-bottom: 1px solid var(--ri-border);
+  box-shadow: var(--ri-shadow-sm);
+}
+
+.app-title {
+  font-weight: 800;
+  font-size: 1.125rem;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--ri-primary);
+    box-shadow: 0 0 0 3px var(--ri-primary-light);
+  }
+}
+
+// ─── Public Layout ───
+.app-public {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--ri-surface-variant);
+}
+
+.app-content {
+  flex: 1 1 auto;
+  padding: 28px;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.app-footer {
+  padding: 20px 28px;
+  color: var(--ri-text-tertiary);
+  border-top: 1px solid var(--ri-border);
+  font-size: 13px;
+  text-align: center;
+  background: var(--ri-surface);
+}
+
+// ─── Material Cards ───
 .mat-mdc-card {
-  border-radius: 16px;
-  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.06), 0 10px 26px rgba(15, 23, 42, 0.08) !important;
+  border-radius: var(--ri-radius-lg) !important;
+  border: 1px solid var(--ri-border) !important;
+  box-shadow: var(--ri-shadow-sm) !important;
+  background: var(--ri-surface) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  overflow: hidden;
 }
 
+.mat-mdc-card:hover {
+  box-shadow: var(--ri-shadow-md) !important;
+}
+
+.mat-mdc-card-title {
+  padding: 20px 20px 0;
+}
+
+.mat-mdc-card-content {
+  padding: 20px !important;
+}
+
+// ─── Buttons ───
+.mat-mdc-raised-button,
+.mat-mdc-unelevated-button {
+  border-radius: var(--ri-radius-sm) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+  text-transform: none !important;
+}
+
+.mat-mdc-outlined-button,
+.mdc-button--outlined {
+  border-radius: var(--ri-radius-sm) !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.01em !important;
+  text-transform: none !important;
+  border-color: var(--ri-border) !important;
+}
+
+.mat-mdc-button {
+  border-radius: var(--ri-radius-sm) !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.01em !important;
+  text-transform: none !important;
+}
+
+// ─── Tables ───
 .ri-table-container {
   overflow: auto;
   width: 100%;
+  border-radius: var(--ri-radius-md);
+  border: 1px solid var(--ri-border);
 }
 
 .ri-table-container.ri-table-container-padded {
   padding: 12px;
 }
 
+.mat-mdc-table {
+  background: transparent !important;
+}
+
+.mat-mdc-header-row {
+  background: var(--ri-surface-variant) !important;
+}
+
+.mat-mdc-header-cell {
+  font-weight: 700 !important;
+  font-size: 12px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: var(--ri-text-secondary) !important;
+  border-bottom: 2px solid var(--ri-border) !important;
+}
+
+.mat-mdc-row {
+  transition: background 0.15s ease;
+}
+
+.mat-mdc-row:hover {
+  background: var(--ri-surface-variant) !important;
+}
+
+.mat-mdc-cell {
+  font-size: 13px !important;
+  color: var(--ri-text) !important;
+  border-bottom-color: var(--ri-border-light) !important;
+}
+
+// ─── Form Fields ───
+.mat-mdc-form-field {
+  .mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__leading,
+  .mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__notch,
+  .mdc-text-field--outlined .mdc-notched-outline .mdc-notched-outline__trailing {
+    border-color: var(--ri-border) !important;
+  }
+}
+
+// ─── Status Badges ───
+.ri-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ri-status-nouveau {
+  color: var(--ri-danger);
+  background: var(--ri-danger-light);
+}
+
+.ri-status-en-cours {
+  color: var(--ri-warning);
+  background: var(--ri-warning-light);
+}
+
+.ri-status-termine {
+  color: var(--ri-success);
+  background: var(--ri-success-light);
+}
+
+.ri-status-annule {
+  color: var(--ri-text-secondary);
+  background: var(--ri-surface-variant);
+}
+
+// ─── Toast Notifications ───
 .ri-toast-content {
   display: flex;
   align-items: center;
@@ -195,84 +429,69 @@ html.dark .mat-mdc-list-item.active {
 }
 
 .ri-toast {
-  border-radius: 14px;
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.20);
+  border-radius: var(--ri-radius-md) !important;
+  box-shadow: var(--ri-shadow-xl) !important;
 }
 
 .ri-toast-info {
-  --mdc-snackbar-container-color: rgba(25, 118, 210, 0.95);
+  --mdc-snackbar-container-color: var(--ri-primary);
   --mdc-snackbar-supporting-text-color: #ffffff;
 }
 
 .ri-toast-success {
-  --mdc-snackbar-container-color: rgba(56, 142, 60, 0.95);
+  --mdc-snackbar-container-color: var(--ri-success);
   --mdc-snackbar-supporting-text-color: #ffffff;
 }
 
 .ri-toast-warning {
-  --mdc-snackbar-container-color: rgba(245, 124, 0, 0.95);
+  --mdc-snackbar-container-color: var(--ri-warning);
   --mdc-snackbar-supporting-text-color: #ffffff;
 }
 
 .ri-toast-danger {
-  --mdc-snackbar-container-color: rgba(211, 47, 47, 0.95);
+  --mdc-snackbar-container-color: var(--ri-danger);
   --mdc-snackbar-supporting-text-color: #ffffff;
 }
 
+// ─── Loader ───
 .ri-loader {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  padding: 8px 0;
 }
 
 .ri-loader-label {
-  opacity: 0.8;
+  color: var(--ri-text-secondary);
+  font-size: 13px;
 }
 
-.ri-status {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 0.2px;
-}
-
-.ri-status-nouveau {
-  color: #ffffff;
-  background: var(--ri-danger);
-}
-
-.ri-status-en-cours {
-  color: #ffffff;
-  background: var(--ri-warning);
-}
-
-.ri-status-termine {
-  color: #ffffff;
-  background: var(--ri-success);
-}
-
+// ─── Stats Cards ───
 .ri-stats-card {
   position: relative;
   overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--ri-shadow-lg) !important;
+  }
 }
 
 .ri-stats-card[data-variant='primary'] {
-  border-left: 6px solid var(--ri-primary);
+  border-left: 4px solid var(--ri-primary) !important;
 }
 
 .ri-stats-card[data-variant='success'] {
-  border-left: 6px solid var(--ri-success);
+  border-left: 4px solid var(--ri-success) !important;
 }
 
 .ri-stats-card[data-variant='warning'] {
-  border-left: 6px solid var(--ri-warning);
+  border-left: 4px solid var(--ri-warning) !important;
 }
 
 .ri-stats-card[data-variant='danger'] {
-  border-left: 6px solid var(--ri-danger);
+  border-left: 4px solid var(--ri-danger) !important;
 }
 
 .ri-stats-card-content {
@@ -288,23 +507,38 @@ html.dark .mat-mdc-list-item.active {
 }
 
 .ri-stats-card-title {
-  font-weight: 700;
-  opacity: 0.85;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ri-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.ri-stats-card-header .mat-icon {
+  color: var(--ri-text-tertiary);
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
 }
 
 .ri-stats-card-value {
-  font-size: 28px;
+  font-size: 2rem;
   font-weight: 800;
-  letter-spacing: -0.4px;
+  letter-spacing: -0.03em;
+  color: var(--ri-text);
+  line-height: 1;
 }
 
 .ri-stats-card-subtitle {
-  opacity: 0.75;
+  color: var(--ri-text-secondary);
+  font-size: 13px;
 }
 
+// ─── Map Pins ───
 .ri-pin {
-  filter: drop-shadow(0 10px 18px rgba(15, 23, 42, 0.25));
+  filter: drop-shadow(0 4px 12px rgba(15, 23, 42, 0.2));
   transform-origin: 50% 100%;
+  transition: transform 0.2s ease, filter 0.2s ease;
 }
 
 .ri-pin svg {
@@ -312,15 +546,245 @@ html.dark .mat-mdc-list-item.active {
 }
 
 .ri-pin:hover {
-  transform: scale(1.06);
-  filter: drop-shadow(0 14px 22px rgba(15, 23, 42, 0.30));
+  transform: scale(1.1);
+  filter: drop-shadow(0 6px 16px rgba(15, 23, 42, 0.3));
 }
 
+// ─── Filter Bar ───
+.ri-filter-bar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  padding: 4px 0 16px;
+  border-bottom: 1px solid var(--ri-border-light);
+  margin-bottom: 16px;
+}
+
+// ─── Grid Layout ───
+.ri-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.ri-full-width {
+  grid-column: 1 / -1;
+}
+
+// ─── Auth Pages ───
+.ri-auth-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 120px);
+  padding: 40px 20px;
+}
+
+.ri-auth-card {
+  width: 100%;
+  max-width: 480px;
+
+  .ri-auth-header {
+    text-align: center;
+    padding-bottom: 8px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--ri-border-light);
+
+    h1 {
+      font-size: 1.5rem;
+      margin: 0 0 4px;
+    }
+
+    p {
+      color: var(--ri-text-secondary);
+      margin: 0;
+      font-size: 14px;
+    }
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .ri-auth-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+
+    button[type="submit"] {
+      height: 44px;
+      font-size: 15px;
+    }
+  }
+
+  .ri-error-message {
+    color: var(--ri-danger);
+    font-size: 13px;
+    padding: 10px 14px;
+    background: var(--ri-danger-light);
+    border-radius: var(--ri-radius-sm);
+    margin-bottom: 8px;
+  }
+}
+
+// ─── Log Cards ───
+.ri-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px;
+  border: 1px solid var(--ri-border);
+  border-radius: var(--ri-radius-md);
+  background: var(--ri-surface);
+
+  strong {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ri-text-secondary);
+  }
+
+  span {
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+}
+
+.ri-log-card {
+  border: 1px solid var(--ri-border);
+  border-radius: var(--ri-radius-md);
+  padding: 16px;
+  background: var(--ri-surface);
+  transition: box-shadow 0.15s ease;
+
+  &:hover {
+    box-shadow: var(--ri-shadow-sm);
+  }
+}
+
+.ri-log-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.ri-log-title {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.ri-log-date {
+  color: var(--ri-text-tertiary);
+  font-size: 13px;
+}
+
+.ri-log-success {
+  color: var(--ri-success);
+  font-weight: 600;
+}
+
+.ri-log-failure {
+  color: var(--ri-danger);
+  font-weight: 600;
+}
+
+// ─── Empty States ───
+.ri-empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--ri-text-secondary);
+
+  .mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: var(--ri-text-tertiary);
+    margin-bottom: 12px;
+  }
+
+  p {
+    font-size: 15px;
+    margin: 0;
+  }
+}
+
+// ─── Progress Bar ───
+.mat-mdc-progress-bar {
+  border-radius: 999px !important;
+  height: 8px !important;
+}
+
+// ─── Button Toggle ───
+.mat-button-toggle-group {
+  border-radius: var(--ri-radius-sm) !important;
+  border: 1px solid var(--ri-border) !important;
+}
+
+.mat-button-toggle {
+  font-weight: 500 !important;
+  font-size: 13px !important;
+}
+
+// ─── Scrollbar ───
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ri-border);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ri-text-tertiary);
+}
+
+// ─── Responsive ───
 @media (max-width: 900px) {
   .app-sidenav {
-    width: 240px;
+    width: 260px;
   }
   .app-content {
-    padding: 14px;
+    padding: 16px;
   }
+
+  h1 {
+    font-size: 1.375rem;
+  }
+
+  .ri-stats-grid {
+    gap: 12px;
+  }
+
+  .ri-stats-card-value {
+    font-size: 1.5rem;
+  }
+}
+
+// ─── Animations ───
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ri-animate-in {
+  animation: fadeInUp 0.3s ease-out;
 }

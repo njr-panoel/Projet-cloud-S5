@@ -16,8 +16,8 @@ import { MapService, StatutFiltre } from '../../../core/services/map.service';
   template: `
     <mat-card>
       <mat-card-content>
-        <div style="display:flex; align-items:center; gap:12px; flex-wrap: wrap; margin-bottom: 12px;">
-          <div style="font-weight: 600;">Filtrer:</div>
+        <div class="ri-filter-bar" style="margin-bottom: 16px;">
+          <span style="font-weight: 600; color: var(--ri-text-secondary);">Filtrer:</span>
           <mat-button-toggle-group
             [value]="filtre"
             (valueChange)="onFiltreChange($event)"
@@ -30,7 +30,7 @@ import { MapService, StatutFiltre } from '../../../core/services/map.service';
           </mat-button-toggle-group>
         </div>
 
-        <div #map style="height: min(70vh, 640px); width: 100%; border-radius: 12px; position: relative; z-index: 1;"></div>
+        <div #map style="height: min(70vh, 640px); width: 100%; border-radius: var(--ri-radius-lg); position: relative; z-index: 1; border: 1px solid var(--ri-border);"></div>
       </mat-card-content>
     </mat-card>
   `

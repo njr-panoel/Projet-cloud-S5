@@ -6,6 +6,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { interval, startWith, switchMap } from 'rxjs';
@@ -18,19 +19,21 @@ import { StatsCardComponent } from '../../../shared/components/stats-card/stats-
 @Component({
   standalone: true,
   selector: 'app-manager-dashboard-page',
-  imports: [AsyncPipe, RouterLink, MatCardModule, MatButtonModule, MatSnackBarModule, LoaderComponent, StatsCardComponent],
+  imports: [AsyncPipe, RouterLink, MatCardModule, MatButtonModule, MatIconModule, MatSnackBarModule, LoaderComponent, StatsCardComponent],
   template: `
-    <div style="display:flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
-      <h1 style="margin: 0;">Dashboard manager</h1>
-      <div style="display:flex; gap: 10px; flex-wrap: wrap;">
-        <a mat-stroked-button routerLink="/manager/sync">Page sync</a>
+    <div class="ri-page-header">
+      <h1>Dashboard manager</h1>
+      <div class="ri-page-actions">
+        <a mat-stroked-button routerLink="/manager/sync">
+          <mat-icon>sync</mat-icon> Page sync
+        </a>
         <button mat-raised-button color="primary" type="button" (click)="syncToFirebase()" [disabled]="loading">
-          Synchroniser avec Firebase
+          <mat-icon>cloud_upload</mat-icon> Synchroniser Firebase
         </button>
       </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-top: 16px;">
+    <div class="ri-stats-grid ri-animate-in">
       @if (stats$ | async; as s) {
         <app-stats-card title="Total signalements" [value]="s.nbPoints" icon="pin_drop" variant="primary" />
         <app-stats-card title="Nouveaux" [value]="s.nbNouveau" icon="fiber_new" variant="danger" />
@@ -38,7 +41,7 @@ import { StatsCardComponent } from '../../../shared/components/stats-card/stats-
         <app-stats-card title="Terminés" [value]="s.nbTermine" icon="check_circle" variant="success" />
         <app-stats-card title="Avancement" [value]="s.avancementPercent + '%'" icon="trending_up" />
       } @else {
-        <mat-card style="grid-column: 1 / -1;">
+        <mat-card class="ri-full-width">
           <mat-card-content>
             <app-loader label="Chargement des statistiques…" />
           </mat-card-content>
@@ -52,19 +55,23 @@ import { StatsCardComponent } from '../../../shared/components/stats-card/stats-
         <app-stats-card title="Succès" [value]="st.successfulSyncs" icon="check" variant="success" />
         <app-stats-card title="Échecs" [value]="st.failedSyncs" icon="error" variant="danger" />
       } @else {
-        <mat-card style="grid-column: 1 / -1;">
+        <mat-card class="ri-full-width">
           <mat-card-content>
             <app-loader label="Chargement sync…" />
           </mat-card-content>
         </mat-card>
       }
 
-      <mat-card style="grid-column: 1 / -1;">
+      <mat-card class="ri-full-width">
         <mat-card-title>Raccourcis</mat-card-title>
         <mat-card-content>
-          <div style="display:flex; gap: 10px; flex-wrap: wrap;">
-            <a mat-raised-button color="primary" routerLink="/manager/signalements">Gérer les signalements</a>
-            <a mat-raised-button color="primary" routerLink="/manager/utilisateurs">Gérer les utilisateurs</a>
+          <div style="display:flex; gap: 12px; flex-wrap: wrap;">
+            <a mat-raised-button color="primary" routerLink="/manager/signalements">
+              <mat-icon>report</mat-icon> Gérer les signalements
+            </a>
+            <a mat-raised-button color="primary" routerLink="/manager/utilisateurs">
+              <mat-icon>group</mat-icon> Gérer les utilisateurs
+            </a>
           </div>
         </mat-card-content>
       </mat-card>

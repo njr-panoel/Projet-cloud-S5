@@ -5,8 +5,8 @@ import { RouterOutlet } from '@angular/router';
   selector: 'app-root',
   imports: [RouterOutlet],
   template: '<router-outlet />',
-  styleUrl: './app.scss'
+  styles: [`:host { display: block; min-height: 100vh; }`]
 })
 export class App {
-  protected readonly title = signal('frontend-web');
+  protected readonly title = signal('Road Issues');
 }

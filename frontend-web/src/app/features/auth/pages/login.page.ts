@@ -25,52 +25,61 @@ import { AuthService } from '../../../core/services/auth.service';
     MatProgressSpinnerModule
   ],
   template: `
-    <h1>Connexion</h1>
+    <div class="ri-auth-container">
+      <mat-card class="ri-auth-card">
+        <mat-card-content>
+          <div class="ri-auth-header">
+            <h1>Connexion</h1>
+            <p>Accédez à votre espace de suivi</p>
+          </div>
 
-    <mat-card style="width: 100%; max-width: 560px; margin: 0 auto;">
-      <mat-card-content>
-        <form [formGroup]="form" (ngSubmit)="submit()">
-          <mat-form-field appearance="outline" style="width: 100%">
-            <mat-label>Email</mat-label>
-            <input matInput type="email" formControlName="email" autocomplete="email" />
-            @if (form.controls.email.touched && form.controls.email.invalid) {
-              <mat-error>
-                @if (form.controls.email.errors?.['required']) { Email requis. }
-                @if (form.controls.email.errors?.['email']) { Email invalide. }
-              </mat-error>
+          <form [formGroup]="form" (ngSubmit)="submit()">
+            <mat-form-field appearance="outline" style="width: 100%">
+              <mat-label>Email</mat-label>
+              <input matInput type="email" formControlName="email" autocomplete="email" placeholder="vous@exemple.com" />
+              @if (form.controls.email.touched && form.controls.email.invalid) {
+                <mat-error>
+                  @if (form.controls.email.errors?.['required']) { Email requis. }
+                  @if (form.controls.email.errors?.['email']) { Email invalide. }
+                </mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" style="width: 100%">
+              <mat-label>Mot de passe</mat-label>
+              <input matInput type="password" formControlName="password" autocomplete="current-password" />
+              @if (form.controls.password.touched && form.controls.password.invalid) {
+                <mat-error>Mot de passe requis.</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-checkbox formControlName="remember" style="margin-bottom: 8px;">Rester connecté</mat-checkbox>
+
+            @if (blockedMessage(); as msg) {
+              <div class="ri-error-message">{{ msg }}</div>
             }
-          </mat-form-field>
 
-          <mat-form-field appearance="outline" style="width: 100%">
-            <mat-label>Mot de passe</mat-label>
-            <input matInput type="password" formControlName="password" autocomplete="current-password" />
-            @if (form.controls.password.touched && form.controls.password.invalid) {
-              <mat-error>Mot de passe requis.</mat-error>
+            @if (errorMessage) {
+              <div class="ri-error-message">{{ errorMessage }}</div>
             }
-          </mat-form-field>
 
-          <mat-checkbox formControlName="remember">Rester connecté</mat-checkbox>
+            <div class="ri-auth-actions">
+              <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || isBlocked() || loading">
+                @if (loading) {
+                  <mat-progress-spinner diameter="18" mode="indeterminate" />
+                } @else {
+                  Se connecter
+                }
+              </button>
 
-          @if (blockedMessage(); as msg) {
-            <div style="color: #b00020; margin-bottom: 12px;">{{ msg }}</div>
-          }
-
-          @if (errorMessage) {
-            <div style="color: #b00020; margin-bottom: 12px;">{{ errorMessage }}</div>
-          }
-
-          <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || isBlocked() || loading">
-            @if (loading) {
-              <mat-progress-spinner diameter="18" mode="indeterminate" />
-            } @else {
-              Se connecter
-            }
-          </button>
-
-          <a mat-button routerLink="/auth/register" type="button">Créer un compte</a>
-        </form>
-      </mat-card-content>
-    </mat-card>
+              <a mat-button routerLink="/auth/register" type="button" style="text-align: center;">
+                Pas encore de compte ? <strong>S'inscrire</strong>
+              </a>
+            </div>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    </div>
   `
 })
 export class LoginPage {

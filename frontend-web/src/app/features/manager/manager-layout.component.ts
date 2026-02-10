@@ -39,7 +39,7 @@ import { ThemeService } from '../../core/services/theme.service';
       >
         <div class="app-brand">Manager</div>
 
-        <mat-nav-list>
+        <mat-nav-list style="padding: 0 8px;">
           <a mat-list-item routerLink="/manager" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
             <mat-icon matListItemIcon aria-hidden="true">dashboard</mat-icon>
             <span matListItemTitle>Dashboard</span>
@@ -64,25 +64,31 @@ import { ThemeService } from '../../core/services/theme.service';
             <mat-icon matListItemIcon aria-hidden="true">person</mat-icon>
             <span matListItemTitle>Profil</span>
           </a>
+
+          <div style="height: 1px; background: var(--ri-border-light); margin: 8px 12px;"></div>
+
           <a mat-list-item routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
             <mat-icon matListItemIcon aria-hidden="true">public</mat-icon>
-            <span matListItemTitle>Public</span>
+            <span matListItemTitle>Site public</span>
           </a>
         </mat-nav-list>
 
         <div class="app-sidenav-footer">
           <div style="display:flex; gap: 8px; flex-wrap: wrap;">
-            <button mat-stroked-button type="button" (click)="theme.toggle()" aria-label="Basculer le thème">
+            <button mat-stroked-button type="button" (click)="theme.toggle()" aria-label="Basculer le thème" style="flex: 1;">
               <mat-icon aria-hidden="true">{{ theme.theme() === 'dark' ? 'dark_mode' : 'light_mode' }}</mat-icon>
               Thème
             </button>
-            <button mat-raised-button color="primary" type="button" (click)="auth.logout()">Déconnexion</button>
+            <button mat-raised-button color="primary" type="button" (click)="auth.logout()" style="flex: 1;">
+              <mat-icon aria-hidden="true">logout</mat-icon>
+              Déconnexion
+            </button>
           </div>
         </div>
       </mat-sidenav>
 
       <mat-sidenav-content>
-        <mat-toolbar color="primary" class="app-toolbar">
+        <mat-toolbar class="app-toolbar">
           @if (isMobile()) {
             <button mat-icon-button type="button" (click)="sidenav.toggle()" aria-label="Ouvrir le menu">
               <mat-icon aria-hidden="true">menu</mat-icon>

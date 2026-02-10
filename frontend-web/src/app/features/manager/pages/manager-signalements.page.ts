@@ -5,6 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -26,6 +27,7 @@ import { SignalementDto, StatutSignalement, TypeTravaux } from '../../../models/
     ReactiveFormsModule,
     MatCardModule,
     MatButtonModule,
+    MatIconModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
@@ -35,13 +37,16 @@ import { SignalementDto, StatutSignalement, TypeTravaux } from '../../../models/
     MatProgressSpinnerModule
   ],
   template: `
-    <h1>Gestion des signalements</h1>
+    <div class="ri-page-header">
+      <h1>Gestion des signalements</h1>
+    </div>
 
-    <mat-card>
+    <mat-card class="ri-animate-in">
       <mat-card-content>
-        <div style="display:flex; gap: 10px; flex-wrap: wrap; align-items:center;">
+        <div class="ri-filter-bar">
           <mat-form-field appearance="outline">
             <mat-label>Recherche</mat-label>
+            <mat-icon matPrefix>search</mat-icon>
             <input matInput [formControl]="searchCtrl" placeholder="Titre, adresse, email…" />
           </mat-form-field>
 
@@ -66,8 +71,12 @@ import { SignalementDto, StatutSignalement, TypeTravaux } from '../../../models/
             </mat-select>
           </mat-form-field>
 
-          <button mat-stroked-button type="button" (click)="refresh()" [disabled]="loading">Rafraîchir</button>
-          <button mat-stroked-button type="button" (click)="export()" [disabled]="loading">Exporter (.xlsx)</button>
+          <button mat-stroked-button type="button" (click)="refresh()" [disabled]="loading">
+            <mat-icon>refresh</mat-icon> Rafraîchir
+          </button>
+          <button mat-stroked-button type="button" (click)="export()" [disabled]="loading">
+            <mat-icon>download</mat-icon> Exporter (.xlsx)
+          </button>
         </div>
 
         <div style="margin-top: 12px; display:flex; align-items:center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
@@ -80,7 +89,7 @@ import { SignalementDto, StatutSignalement, TypeTravaux } from '../../../models/
           }
         </div>
 
-        <div style="overflow:auto; margin-top: 12px;">
+        <div class="ri-table-container">
           <table mat-table [dataSource]="dataSource" matSort>
             <ng-container matColumnDef="id">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
@@ -129,7 +138,9 @@ import { SignalementDto, StatutSignalement, TypeTravaux } from '../../../models/
             <ng-container matColumnDef="actions">
               <th mat-header-cell *matHeaderCellDef>Actions</th>
               <td mat-cell *matCellDef="let s">
-                <button mat-button type="button" (click)="remove(s)">Supprimer</button>
+                <button mat-button color="warn" type="button" (click)="remove(s)">
+                  <mat-icon>delete</mat-icon> Supprimer
+                </button>
               </td>
             </ng-container>
 

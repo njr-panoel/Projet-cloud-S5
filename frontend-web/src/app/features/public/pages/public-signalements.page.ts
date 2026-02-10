@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 
 import { AuthService } from '../../../core/services/auth.service';
@@ -20,26 +21,34 @@ import { TableContainerComponent } from '../../../shared/components/table-contai
     RouterLink,
     MatCardModule,
     MatButtonModule,
+    MatIconModule,
     MatTableModule,
     LoaderComponent,
     TableContainerComponent
   ],
   template: `
-    <div style="display:flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
-      <h1 style="margin: 0;">Signalements</h1>
-      <div style="display:flex; gap: 10px; flex-wrap: wrap;">
-        <a mat-stroked-button routerLink="/carte">Carte</a>
+    <div class="ri-page-header">
+      <h1>Signalements</h1>
+      <div class="ri-page-actions">
+        <a mat-stroked-button routerLink="/carte">
+          <mat-icon>map</mat-icon> Carte
+        </a>
         @if (canReport()) {
-          <a mat-raised-button color="primary" routerLink="/signaler">Signaler</a>
+          <a mat-raised-button color="primary" routerLink="/signaler">
+            <mat-icon>add_location_alt</mat-icon> Signaler
+          </a>
         }
       </div>
     </div>
 
-    <mat-card style="margin-top: 16px;">
+    <mat-card>
       <mat-card-content>
         @if (signalements$ | async; as list) {
           @if (list.length === 0) {
-            <div>Aucun signalement.</div>
+            <div class="ri-empty-state">
+              <mat-icon>inbox</mat-icon>
+              <p>Aucun signalement pour le moment</p>
+            </div>
           } @else {
             <app-table-container>
               <table mat-table [dataSource]="list" style="min-width: 900px;">
@@ -55,7 +64,7 @@ import { TableContainerComponent } from '../../../shared/components/table-contai
 
                 <ng-container matColumnDef="titre">
                   <th mat-header-cell *matHeaderCellDef>Titre</th>
-                  <td mat-cell *matCellDef="let s">{{ s.titre }}</td>
+                  <td mat-cell *matCellDef="let s" style="font-weight: 500;">{{ s.titre }}</td>
                 </ng-container>
 
                 <ng-container matColumnDef="statut">

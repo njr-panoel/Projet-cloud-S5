@@ -6,6 +6,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTableModule } from '@angular/material/table';
@@ -25,6 +26,7 @@ import { TableContainerComponent } from '../../../shared/components/table-contai
     RouterLink,
     MatCardModule,
     MatButtonModule,
+    MatIconModule,
     MatProgressSpinnerModule,
     MatProgressBarModule,
     MatTableModule,
@@ -33,51 +35,58 @@ import { TableContainerComponent } from '../../../shared/components/table-contai
     TableContainerComponent
   ],
   template: `
-    <div style="display:flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
-      <h1 style="margin: 0;">Tableau de bord</h1>
-      <div style="display:flex; gap: 10px; flex-wrap: wrap;">
-        <a mat-stroked-button routerLink="/carte">Carte</a>
-        <a mat-stroked-button routerLink="/signalements">Signalements</a>
+    <div class="ri-page-header">
+      <h1>Tableau de bord</h1>
+      <div class="ri-page-actions">
+        <a mat-stroked-button routerLink="/carte">
+          <mat-icon>map</mat-icon> Carte
+        </a>
+        <a mat-stroked-button routerLink="/signalements">
+          <mat-icon>list_alt</mat-icon> Signalements
+        </a>
       </div>
     </div>
 
     @if (vm$ | async; as vm) {
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-top: 16px;">
+      <div class="ri-stats-grid ri-animate-in">
         <app-stats-card title="Total signalements" [value]="vm.nbPoints" icon="pin_drop" variant="primary" />
         <app-stats-card title="Nouveaux" [value]="vm.nbNouveau" icon="fiber_new" variant="danger" />
         <app-stats-card title="En cours" [value]="vm.nbEnCours" icon="autorenew" variant="warning" />
         <app-stats-card title="Terminés" [value]="vm.nbTermine" icon="check_circle" variant="success" />
         <app-stats-card title="Avancement" [value]="vm.avancementPercent + '%'" icon="trending_up" />
-        <app-stats-card title="Surface totale (m²)" [value]="vm.totalSurfaceM2" icon="crop_square" />
+        <app-stats-card title="Surface totale (m\u00B2)" [value]="vm.totalSurfaceM2" icon="crop_square" />
         <app-stats-card title="Budget total" [value]="vm.totalBudget" icon="payments" />
 
-        <mat-card style="grid-column: 1 / -1;">
-          <mat-card-title>Avancement</mat-card-title>
+        <mat-card class="ri-full-width">
+          <mat-card-title>Avancement global</mat-card-title>
           <mat-card-content>
-            <div style="display:flex; align-items:center; justify-content: space-between; gap: 12px;">
-              <div style="font-weight: 600;">{{ vm.avancementPercent }}%</div>
-              <div style="opacity: 0.75;">global</div>
+            <div style="display:flex; align-items:center; justify-content: space-between; gap: 12px; margin-bottom: 12px;">
+              <div style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em;">{{ vm.avancementPercent }}%</div>
+              <div style="color: var(--ri-text-secondary); font-size: 13px;">Progression globale des travaux</div>
             </div>
             <mat-progress-bar mode="determinate" [value]="vm.avancementPercent" />
           </mat-card-content>
         </mat-card>
 
-        <mat-card style="grid-column: 1 / -1;">
+        <mat-card class="ri-full-width">
           <mat-card-title>Répartition par statut</mat-card-title>
           <mat-card-content>
-            <canvas #chart style="width: 100%; height: 220px;"></canvas>
+            <canvas #chart style="width: 100%; height: 240px;"></canvas>
           </mat-card-content>
         </mat-card>
 
-        <mat-card style="grid-column: 1 / -1;">
+        <mat-card class="ri-full-width">
           <mat-card-title>Derniers signalements</mat-card-title>
           <mat-card-content>
             @if (latest$ | async; as latest) {
               @if (latest.length === 0) {
-                <div>Aucun signalement.</div>
+                <div class="ri-empty-state">
+                  <mat-icon>inbox</mat-icon>
+                  <p>Aucun signalement pour le moment</p>
+                </div>
               } @else {
                 <app-table-container>
-                  <table mat-table [dataSource]="latest" style="min-width: 860px;">
+                  <table mat-table [dataSource]="latest" style="min-width: 700px;">
                     <ng-container matColumnDef="id">
                       <th mat-header-cell *matHeaderCellDef>ID</th>
                       <td mat-cell *matCellDef="let s">#{{ s.id }}</td>
@@ -90,7 +99,7 @@ import { TableContainerComponent } from '../../../shared/components/table-contai
 
                     <ng-container matColumnDef="titre">
                       <th mat-header-cell *matHeaderCellDef>Titre</th>
-                      <td mat-cell *matCellDef="let s">{{ s.titre }}</td>
+                      <td mat-cell *matCellDef="let s" style="font-weight: 500;">{{ s.titre }}</td>
                     </ng-container>
 
                     <ng-container matColumnDef="statut">
@@ -120,7 +129,7 @@ import { TableContainerComponent } from '../../../shared/components/table-contai
         </mat-card>
       </div>
     } @else {
-      <mat-card style="margin-top: 16px;">
+      <mat-card style="margin-top: 24px;">
         <mat-card-content>
           <app-loader label="Chargement des statistiques…" />
         </mat-card-content>
