@@ -243,15 +243,27 @@ export class MapService {
   private buildPopupHtml(s: SignalementDto) {
     const date = this.formatDateFr(s.createdAt);
     const statut = this.formatStatutFr(s.statut);
+    const statutColor = this.getStatutColor(s.statut);
     const titre = s.titre || '—';
-    const adresse = s.adresse ?? '—';
+    const surface = s.surface != null ? `${s.surface} m²` : '—';
+    const budget = s.budget != null ? `${s.budget.toLocaleString('fr-FR')} Ar` : '—';
+    const entreprise = s.entreprise || '—';
+    const niveau = s.niveau || '—';
+
+    const photosHtml = s.photos
+      ? `<a href="${s.photos}" target="_blank" rel="noopener" style="color:#1976d2;text-decoration:underline;font-weight:500;">Voir les photos</a>`
+      : '—';
 
     return `
-      <div style="min-width: 220px">
-        <div><strong>Titre:</strong> ${titre}</div>
-        <div><strong>Date:</strong> ${date}</div>
-        <div><strong>Statut:</strong> ${statut}</div>
-        <div><strong>Adresse:</strong> ${adresse}</div>
+      <div style="min-width:260px;font-family:Roboto,Arial,sans-serif;font-size:13px;line-height:1.6;">
+        <div style="font-weight:700;font-size:15px;margin-bottom:8px;border-bottom:2px solid ${statutColor};padding-bottom:6px;">${titre}</div>
+        <div><strong>Date :</strong> ${date}</div>
+        <div><strong>Statut :</strong> <span style="color:${statutColor};font-weight:600;">${statut}</span></div>
+        <div><strong>Surface :</strong> ${surface}</div>
+        <div><strong>Budget :</strong> ${budget}</div>
+        <div><strong>Entreprise :</strong> ${entreprise}</div>
+        <div><strong>Niveau :</strong> ${niveau}</div>
+        <div style="margin-top:6px;"><strong>Photos :</strong> ${photosHtml}</div>
       </div>
     `;
   }
@@ -360,7 +372,11 @@ export class MapService {
         firebaseId: null,
         createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
         updatedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
-        completedAt: null
+        completedAt: null,
+        surface: 25,
+        budget: 500000,
+        entreprise: 'Colas Madagascar',
+        niveau: 'Urgent'
       },
       {
         id: 2,
@@ -384,7 +400,11 @@ export class MapService {
         firebaseId: null,
         createdAt: new Date(Date.now() - 6 * 86400000).toISOString(),
         updatedAt: new Date(Date.now() - 1 * 86400000).toISOString(),
-        completedAt: null
+        completedAt: null,
+        surface: 40,
+        budget: 800000,
+        entreprise: 'SOGEA Madagascar',
+        niveau: 'Moyen'
       },
       {
         id: 3,
@@ -408,7 +428,11 @@ export class MapService {
         firebaseId: 'mock123',
         createdAt: new Date(Date.now() - 20 * 86400000).toISOString(),
         updatedAt: new Date(Date.now() - 5 * 86400000).toISOString(),
-        completedAt: null
+        completedAt: null,
+        surface: 15,
+        budget: 300000,
+        entreprise: 'Henri Fraise',
+        niveau: 'Faible'
       }
     ];
   }

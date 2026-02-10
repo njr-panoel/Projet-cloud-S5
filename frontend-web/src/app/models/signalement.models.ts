@@ -34,6 +34,10 @@ export interface SignalementDto {
   createdAt: string;
   updatedAt: string;
   completedAt: string | null;
+  surface: number | null;
+  budget: number | null;
+  entreprise: string | null;
+  niveau: string | null;
 }
 
 export interface CreateSignalementRequest {
@@ -46,6 +50,10 @@ export interface CreateSignalementRequest {
   adresse?: string | null;
   photos?: string | null;
   firebaseId?: string | null;
+  surface?: number | null;
+  budget?: number | null;
+  entreprise?: string | null;
+  niveau?: string | null;
 }
 
 export interface UpdateSignalementRequest extends CreateSignalementRequest {}

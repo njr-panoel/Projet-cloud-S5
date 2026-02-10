@@ -51,7 +51,11 @@ export class PublicDataService {
         firebaseId: null,
         createdAt: new Date(now - 2 * 86400000).toISOString(),
         updatedAt: new Date(now - 2 * 86400000).toISOString(),
-        completedAt: null
+        completedAt: null,
+        surface: 25,
+        budget: 500000,
+        entreprise: 'Colas Madagascar',
+        niveau: 'Urgent'
       },
       {
         id: 102,
@@ -75,7 +79,11 @@ export class PublicDataService {
         firebaseId: null,
         createdAt: new Date(now - 6 * 86400000).toISOString(),
         updatedAt: new Date(now - 1 * 86400000).toISOString(),
-        completedAt: null
+        completedAt: null,
+        surface: 40,
+        budget: 800000,
+        entreprise: 'SOGEA Madagascar',
+        niveau: 'Moyen'
       },
       {
         id: 103,
@@ -99,7 +107,11 @@ export class PublicDataService {
         firebaseId: 'mock123',
         createdAt: new Date(now - 20 * 86400000).toISOString(),
         updatedAt: new Date(now - 5 * 86400000).toISOString(),
-        completedAt: null
+        completedAt: null,
+        surface: 15,
+        budget: 300000,
+        entreprise: 'Henri Fraise',
+        niveau: 'Faible'
       }
     ];
   }

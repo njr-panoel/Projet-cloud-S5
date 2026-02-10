@@ -69,7 +69,11 @@ let mockSignalements: SignalementDto[] = [
     firebaseId: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    completedAt: null
+    completedAt: null,
+    surface: 25,
+    budget: 500000,
+    entreprise: 'Colas Madagascar',
+    niveau: 'Urgent'
   }
 ];
 
@@ -100,12 +104,14 @@ function computeStats(list: SignalementDto[]): StatsDto {
   const nbEnCours = list.filter((s) => s.statut === 'EN_COURS').length;
   const nbTermine = list.filter((s) => s.statut === 'TERMINE').length;
   const avancementPercent = nbPoints === 0 ? 0 : Math.round((nbTermine / nbPoints) * 100);
+  const totalSurfaceM2 = list.reduce((sum, s) => sum + (s.surface ?? 0), 0);
+  const totalBudget = list.reduce((sum, s) => sum + (s.budget ?? 0), 0);
 
   return {
     nbPoints,
-    totalSurfaceM2: 0,
+    totalSurfaceM2,
     avancementPercent,
-    totalBudget: 0,
+    totalBudget,
     nbNouveau,
     nbEnCours,
     nbTermine

@@ -12,11 +12,14 @@ import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 import { AuthService } from '../../../core/services/auth.service';
 import { MapService } from '../../../core/services/map.service';
 import { MapComponent } from '../../../shared/components/map/map.component';
 import { GeocodingService } from '../services/geocoding.service';
+import { PublicDataService } from '../services/public-data.service';
+import { StatsCardComponent } from '../../../shared/components/stats-card/stats-card.component';
 
 @Component({
   standalone: true,
@@ -31,7 +34,9 @@ import { GeocodingService } from '../services/geocoding.service';
     MatListModule,
     MatButtonModule,
     MatIconModule,
-    MapComponent
+    MatProgressBarModule,
+    MapComponent,
+    StatsCardComponent
   ],
   template: `
     <div class="ri-page-header">
@@ -77,6 +82,30 @@ import { GeocodingService } from '../services/geocoding.service';
 
     <app-map (locationSelected)="onLocationSelected($event)" />
 
+    @if (stats$ | async; as stats) {
+      <mat-card style="margin-top: 16px;" class="ri-animate-in">
+        <mat-card-content>
+          <div style="font-weight: 700; font-size: 16px; margin-bottom: 12px;">
+            <mat-icon style="vertical-align: middle; font-size: 20px; margin-right: 6px; color: var(--ri-primary);">summarize</mat-icon>
+            Récapitulation
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
+            <app-stats-card title="Nb de points" [value]="stats.nbPoints" icon="pin_drop" variant="primary" />
+            <app-stats-card title="Surface totale (m²)" [value]="stats.totalSurfaceM2" icon="crop_square" />
+            <app-stats-card title="Avancement" [value]="stats.avancementPercent + '%'" icon="trending_up" variant="success" />
+            <app-stats-card title="Budget total" [value]="stats.totalBudget" icon="payments" variant="warning" />
+          </div>
+          <div style="margin-top: 16px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <span style="font-weight: 600; font-size: 14px; color: var(--ri-text-secondary);">Avancement global</span>
+              <span style="font-weight: 800; font-size: 18px;">{{ stats.avancementPercent }}%</span>
+            </div>
+            <mat-progress-bar mode="determinate" [value]="stats.avancementPercent"></mat-progress-bar>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    }
+
     @if (picked) {
       <mat-card style="margin-top: 16px;" class="ri-animate-in">
         <mat-card-content style="display:flex; align-items:center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
@@ -109,6 +138,9 @@ export class MapViewComponent {
   private readonly geocoding = inject(GeocodingService);
   private readonly map = inject(MapService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly publicData = inject(PublicDataService);
+
+  protected readonly stats$ = this.publicData.getStats();
 
   protected picked: { lat: number; lon: number } | null = null;
 
