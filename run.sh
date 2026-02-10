@@ -246,8 +246,12 @@ case "$ACTION" in
   docker-down) docker_down ;;
   start)
     if _cmd docker && [ -f "$DEV_DIR/docker-compose.yml" ]; then
-      docker_up
-      echo "✅ Projet démarré via Docker (backend + postgres). Pour le web: lancez 'run-web' ou build 'build-web' si nécessaire."
+      if docker_up; then
+        echo "✅ Projet démarré via Docker (backend + postgres). Pour le web: lancez 'run-web' ou build 'build-web' si nécessaire."
+      else
+        echo "⚠️ Échec du démarrage via Docker — bascule sur démarrage local"
+        start_both_local
+      fi
     else
       echo "Docker non disponible -> démarrage local"
       start_both_local
@@ -256,9 +260,13 @@ case "$ACTION" in
 
   start-all)
     if _cmd docker && [ -f "$DEV_DIR/docker-compose.yml" ]; then
-      docker_up
-      echo "➡️ Docker démarré. Démarrage du front en dev..."
-      run_web
+      if docker_up; then
+        echo "➡️ Docker démarré. Démarrage du front en dev..."
+        run_web
+      else
+        echo "⚠️ Échec du démarrage via Docker — bascule sur démarrage local"
+        start_both_local
+      fi
     else
       echo "➡️ Démarrage local (backend en BG + front en FG)..."
       start_both_local

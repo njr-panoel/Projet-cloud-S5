@@ -78,5 +78,32 @@ public class Signalement {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
     
-    private LocalDateTime completedAt;
+    // Dates de suivi d'avancement
+    private LocalDateTime dateNouveau;      // Date de création (= createdAt)
+    private LocalDateTime dateEnCours;      // Date de passage en cours
+    private LocalDateTime dateTermine;      // Date de terminaison
+    private LocalDateTime completedAt;      // Alias pour dateTermine (rétrocompatibilité)
+    
+    // Calcul de l'avancement basé sur le statut
+    public Integer getAvancement() {
+        if (statut == null) return 0;
+        return switch (statut) {
+            case NOUVEAU -> 0;
+            case EN_COURS -> 50;
+            case TERMINE -> 100;
+            case ANNULE -> 0;
+        };
+    }
+    
+    // Calcul du délai de traitement en jours (de nouveau à terminé)
+    public Long getDelaiTraitementJours() {
+        if (dateNouveau == null || dateTermine == null) return null;
+        return java.time.Duration.between(dateNouveau, dateTermine).toDays();
+    }
+    
+    // Calcul du délai avant prise en charge en jours (de nouveau à en cours)
+    public Long getDelaiPriseEnChargeJours() {
+        if (dateNouveau == null || dateEnCours == null) return null;
+        return java.time.Duration.between(dateNouveau, dateEnCours).toDays();
+    }
 }

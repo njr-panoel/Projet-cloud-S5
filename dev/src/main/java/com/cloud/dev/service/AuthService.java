@@ -4,24 +4,29 @@ import com.cloud.dev.dto.request.LoginRequest;
 import com.cloud.dev.dto.request.RegisterRequest;
 import com.cloud.dev.dto.response.AuthResponse;
 import com.cloud.dev.dto.response.UserResponse;
+import com.cloud.dev.entity.LoginAttempt;
 import com.cloud.dev.entity.Session;
 import com.cloud.dev.entity.User;
 import com.cloud.dev.enums.AuthProvider;
 import com.cloud.dev.exception.AccountLockedException;
 import com.cloud.dev.exception.InvalidCredentialsException;
 import com.cloud.dev.exception.UserAlreadyExistsException;
+import com.cloud.dev.repository.LoginAttemptRepository;
 import com.cloud.dev.repository.SessionRepository;
 import com.cloud.dev.repository.UserRepository;
 import com.cloud.dev.util.JwtUtil;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.LocalDateTime;
 
@@ -32,8 +37,10 @@ public class AuthService {
     
     private final UserRepository userRepository;
     private final SessionRepository sessionRepository;
+    private final LoginAttemptRepository loginAttemptRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final FirebaseAuthService firebaseAuthService;
     
     @Value("${app.security.max-login-attempts}")
     private Integer maxLoginAttempts;
@@ -70,6 +77,16 @@ public class AuthService {
         
         user = userRepository.save(user);
         
+        // Créer le compte Firebase Auth immédiatement pour les utilisateurs mobiles
+        if (user.getRole() == com.cloud.dev.enums.Role.UTILISATEUR_MOBILE && firebaseEnabled) {
+            boolean firebaseCreated = firebaseAuthService.createFirebaseAccount(user, request.getPassword());
+            if (firebaseCreated) {
+                log.info("Compte Firebase Auth créé pour l'utilisateur mobile: {}", user.getEmail());
+            } else {
+                log.warn("Échec de la création du compte Firebase Auth pour: {}", user.getEmail());
+            }
+        }
+        
         // Générer token JWT
         String token = jwtUtil.generateToken(user.getEmail());
         
@@ -79,7 +96,7 @@ public class AuthService {
         return buildAuthResponse(user, token);
     }
     
-    @Transactional
+    @Transactional(noRollbackFor = {InvalidCredentialsException.class, AccountLockedException.class})
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new InvalidCredentialsException("Email ou mot de passe incorrect"));
@@ -99,6 +116,9 @@ public class AuthService {
         user.setLastLoginAt(LocalDateTime.now());
         userRepository.save(user);
         
+        // Enregistrer la connexion réussie
+        recordLoginAttempt(user, true, null);
+        
         // Générer token JWT
         String token = jwtUtil.generateToken(user.getEmail());
         
@@ -110,7 +130,7 @@ public class AuthService {
     
     private void authenticateLocal(String password, User user) {
         if (user.getPassword() == null || !passwordEncoder.matches(password, user.getPassword())) {
-            handleFailedLogin(user);
+            handleFailedLogin(user, "Mot de passe incorrect");
             throw new InvalidCredentialsException("Email ou mot de passe incorrect");
         }
     }
@@ -121,42 +141,81 @@ public class AuthService {
             String firebaseUid = decodedToken.getUid();
             
             if (!firebaseUid.equals(user.getFirebaseUid())) {
-                handleFailedLogin(user);
+                handleFailedLogin(user, "UID Firebase ne correspond pas");
                 throw new InvalidCredentialsException("Token Firebase invalide");
             }
         } catch (FirebaseAuthException e) {
             log.error("Erreur Firebase Auth", e);
-            handleFailedLogin(user);
+            handleFailedLogin(user, "Erreur vérification Firebase: " + e.getMessage());
             throw new InvalidCredentialsException("Authentification Firebase échouée");
         }
     }
     
     private void checkAccountLock(User user) {
-        if (user.getAccountLocked()) {
-            if (user.getLockedUntil() != null && user.getLockedUntil().isBefore(LocalDateTime.now())) {
-                // Débloquer automatiquement
-                user.setAccountLocked(false);
-                user.setLockedUntil(null);
-                user.setLoginAttempts(0);
-                userRepository.save(user);
-            } else {
-                throw new AccountLockedException(
-                    "Compte verrouillé jusqu'à " + user.getLockedUntil()
-                );
-            }
+        if (user.getAccountLocked() != null && user.getAccountLocked()) {
+            // Le compte reste bloqué jusqu'à ce qu'un manager le débloque
+            // Pas de déblocage automatique basé sur le temps
+            Integer attempts = user.getLoginAttempts() != null ? user.getLoginAttempts() : 0;
+            throw new AccountLockedException(
+                "Compte verrouillé après " + attempts + " tentatives échouées. Contactez un manager pour le déblocage."
+            );
         }
     }
     
-    private void handleFailedLogin(User user) {
+    private void handleFailedLogin(User user, String failureReason) {
+        // Initialiser à 0 si NULL
+        if (user.getLoginAttempts() == null) {
+            user.setLoginAttempts(0);
+        }
+        
         user.setLoginAttempts(user.getLoginAttempts() + 1);
+        
+        // Enregistrer la tentative échouée
+        recordLoginAttempt(user, false, failureReason);
         
         if (user.getLoginAttempts() >= maxLoginAttempts) {
             user.setAccountLocked(true);
-            user.setLockedUntil(LocalDateTime.now().plusSeconds(lockDuration / 1000));
-            log.warn("Compte verrouillé pour l'utilisateur: {}", user.getEmail());
+            user.setLockedUntil(null); // Pas de déblocage automatique
+            log.warn("Compte verrouillé définitivement pour l'utilisateur: {} après {} tentatives", 
+                    user.getEmail(), maxLoginAttempts);
         }
         
         userRepository.save(user);
+    }
+    
+    private void recordLoginAttempt(User user, boolean success, String failureReason) {
+        LoginAttempt attempt = new LoginAttempt();
+        attempt.setUser(user);
+        attempt.setSuccess(success);
+        attempt.setFailureReason(failureReason);
+        
+        // Récupérer l'adresse IP et User-Agent
+        try {
+            ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            if (attrs != null) {
+                HttpServletRequest request = attrs.getRequest();
+                attempt.setIpAddress(getClientIpAddress(request));
+                attempt.setUserAgent(request.getHeader("User-Agent"));
+            } else {
+                attempt.setIpAddress("unknown");
+            }
+        } catch (Exception e) {
+            attempt.setIpAddress("unknown");
+        }
+        
+        loginAttemptRepository.save(attempt);
+    }
+    
+    private String getClientIpAddress(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+        String xRealIp = request.getHeader("X-Real-IP");
+        if (xRealIp != null && !xRealIp.isEmpty()) {
+            return xRealIp;
+        }
+        return request.getRemoteAddr();
     }
     
     private void createSession(User user, String token, String deviceInfo) {

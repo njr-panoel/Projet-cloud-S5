@@ -32,4 +32,16 @@ public class SignalementResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime completedAt;
+    
+    // Dates de suivi d'avancement
+    private LocalDateTime dateNouveau;
+    private LocalDateTime dateEnCours;
+    private LocalDateTime dateTermine;
+    
+    // Avancement calculé (0%, 50%, 100%)
+    private Integer avancement;
+    
+    // Délais en jours
+    private Long delaiTraitementJours;      // Nouveau → Terminé
+    private Long delaiPriseEnChargeJours;   // Nouveau → En cours
 }

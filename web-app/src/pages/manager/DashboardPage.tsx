@@ -5,11 +5,18 @@ import {
   Filter, 
   Edit, 
   Trash2,
-  ChevronDown
+  ChevronDown,
+  Download,
+  Upload,
+  Cloud,
+  BarChart3
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Card, Button, Input, Select, Table, Badge, Modal, ModalFooter } from '../../components/ui';
 import { getStatutBadgeVariant, getStatutLabel, getTypeBadgeVariant, getTypeLabel } from '../../components/ui/Badge';
 import { Toast } from '../../components/ui/Toast';
+import { IconTypesTravaux } from '../../components/icons/IconTypesTravaux';
+import { IconStatut } from '../../components/icons/IconStatut';
 import { useSignalementStore } from '../../stores/signalementStore';
 import { syncService } from '../../services/syncService';
 import { SignalementEditModal } from './SignalementEditModal';
@@ -64,11 +71,11 @@ export const DashboardPage: React.FC = () => {
   const handleSyncFromFirebase = async () => {
     setIsSyncing(true);
     try {
-      await syncService.syncFromFirebase();
+      const result = await syncService.syncFromFirebase();
       await fetchSignalements();
-      Toast.success('Synchronisation depuis Firebase réussie !');
+      Toast.success(`Synchronisation Firebase → PostgreSQL: ${result.created} créés, ${result.updated} mis à jour`);
     } catch (error) {
-      Toast.error('Erreur lors de la synchronisation depuis Firebase');
+      Toast.error('Erreur lors de la récupération depuis Firebase');
     } finally {
       setIsSyncing(false);
     }
@@ -77,10 +84,47 @@ export const DashboardPage: React.FC = () => {
   const handleSyncToFirebase = async () => {
     setIsSyncing(true);
     try {
-      await syncService.syncToFirebase();
-      Toast.success('Synchronisation vers Firebase réussie !');
+      const result = await syncService.syncToFirebase();
+      if (result.syncedCount > 0) {
+        Toast.success(`${result.syncedCount} signalement(s) envoyé(s) vers Firebase !`);
+      } else {
+        Toast.info('Aucun signalement à synchroniser. Utilisez "Force Sync" pour tout renvoyer.');
+      }
     } catch (error) {
-      Toast.error('Erreur lors de la synchronisation vers Firebase');
+      Toast.error('Erreur lors de l\'envoi vers Firebase');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleForceSyncToFirebase = async () => {
+    setIsSyncing(true);
+    try {
+      const result = await syncService.forceSyncToFirebase();
+      Toast.success(`Force Sync: ${result.syncedCount} signalement(s) envoyé(s) vers Firebase !`);
+    } catch (error) {
+      Toast.error('Erreur lors du Force Sync vers Firebase');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleFullSync = async () => {
+    setIsSyncing(true);
+    try {
+      const result = await syncService.fullSync();
+      await fetchSignalements();
+      const userCount = result.users?.syncedCount || 0;
+      const toFb = result.signalementsToFirebase || 0;
+      const fromFb = result.signalementsFromFirebase || { created: 0, updated: 0 };
+      Toast.success(
+        `Sync bidirectionnelle réussie! ` +
+        `Utilisateurs: ${userCount}, ` +
+        `→ Firebase: ${toFb}, ` +
+        `← Firebase: ${fromFb.created} créés, ${fromFb.updated} maj`
+      );
+    } catch (error) {
+      Toast.error('Erreur lors de la synchronisation complète');
     } finally {
       setIsSyncing(false);
     }
@@ -127,19 +171,42 @@ export const DashboardPage: React.FC = () => {
       header: 'Statut',
       sortable: true,
       render: (item: Signalement) => (
-        <Badge variant={getStatutBadgeVariant(item.statut)}>
-          {getStatutLabel(item.statut)}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <IconStatut statut={item.statut} size="sm" />
+          <Badge variant={getStatutBadgeVariant(item.statut)}>
+            {getStatutLabel(item.statut)}
+          </Badge>
+        </div>
       ),
+    },
+    {
+      key: 'avancement',
+      header: 'Avancement',
+      sortable: true,
+      render: (item: Signalement) => {
+        const avancement = item.avancement ?? 0;
+        const colorClass = avancement === 100 ? 'bg-green-500' : avancement === 50 ? 'bg-blue-500' : 'bg-orange-500';
+        return (
+          <div className="flex items-center gap-2">
+            <div className="w-16 bg-gray-200 rounded-full h-2">
+              <div className={`${colorClass} h-2 rounded-full`} style={{ width: `${avancement}%` }}></div>
+            </div>
+            <span className="text-sm font-medium">{avancement}%</span>
+          </div>
+        );
+      },
     },
     {
       key: 'typeTravaux',
       header: 'Type',
       sortable: true,
       render: (item: Signalement) => (
-        <Badge variant={getTypeBadgeVariant(item.typeTravaux)}>
-          {getTypeLabel(item.typeTravaux)}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <IconTypesTravaux type={item.typeTravaux} size="sm" />
+          <Badge variant={getTypeBadgeVariant(item.typeTravaux)}>
+            {getTypeLabel(item.typeTravaux)}
+          </Badge>
+        </div>
       ),
     },
     {
@@ -211,16 +278,37 @@ export const DashboardPage: React.FC = () => {
                 variant="outline"
                 onClick={handleSyncFromFirebase}
                 isLoading={isSyncing}
-                leftIcon={<RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />}
+                leftIcon={<Download className="w-4 h-4" />}
+                title="Récupérer les signalements depuis Firebase"
               >
-                Récupérer (from Firebase)
+                Récupérer
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleSyncToFirebase}
+                isLoading={isSyncing}
+                leftIcon={<Upload className="w-4 h-4" />}
+                title="Envoyer les signalements modifiés vers Firebase"
+              >
+                Envoyer
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={handleForceSyncToFirebase}
+                isLoading={isSyncing}
+                leftIcon={<RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />}
+                title="Forcer la synchronisation de TOUS les signalements"
+              >
+                Force Sync
               </Button>
               <Button
                 variant="primary"
-                onClick={handleSyncToFirebase}
+                onClick={handleFullSync}
                 isLoading={isSyncing}
+                leftIcon={<Cloud className={`w-4 h-4 ${isSyncing ? 'animate-pulse' : ''}`} />}
+                title="Sync complète: signalements + comptes mobiles"
               >
-                Envoyer (to Firebase)
+                Sync Firebase
               </Button>
             </div>
           </div>
@@ -244,10 +332,18 @@ export const DashboardPage: React.FC = () => {
               <div className="text-sm text-secondary-500">Avancement</div>
               <div className="text-2xl font-bold text-secondary-800">{get().stats?.pourcentageTermine ?? 0}%</div>
             </div>
-            <div className="p-4 bg-white rounded-lg shadow-sm">
-              <div className="text-sm text-secondary-500">Budget total</div>
-              <div className="text-2xl font-bold text-secondary-800">{(get().stats?.totalBudget ?? 0).toLocaleString()} Ar</div>
-            </div>
+            <Link 
+              to="/statistiques" 
+              className="p-4 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg shadow-sm text-white hover:from-blue-700 hover:to-blue-800 transition-all cursor-pointer"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm opacity-90">Statistiques Avancées</div>
+                  <div className="text-lg font-bold">Voir les délais →</div>
+                </div>
+                <BarChart3 className="w-8 h-8 opacity-80" />
+              </div>
+            </Link>
           </div>
 
           {/* Search & Filters Bar */}

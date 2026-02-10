@@ -13,32 +13,32 @@
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
-    <ion-content>
+    <ion-tabs>
       <ion-router-outlet />
-    </ion-content>
-    <ion-tab-bar slot="bottom" color="light">
-      <ion-tab-button tab="map" href="/map">
-        <ion-icon :icon="mapIcon" />
-        <ion-label>Carte</ion-label>
-      </ion-tab-button>
-      <ion-tab-button tab="stats" href="/stats">
-        <ion-icon :icon="statsIcon" />
-        <ion-label>Statistiques</ion-label>
-      </ion-tab-button>
-      <ion-tab-button tab="mes-signaux" href="/mes-signaux">
-        <ion-icon :icon="listIcon" />
-        <ion-label>Mes Signal.</ion-label>
-      </ion-tab-button>
-      <ion-tab-button tab="profil" href="/profil">
-        <ion-icon :icon="personIcon" />
-        <ion-label>Profil</ion-label>
-      </ion-tab-button>
-    </ion-tab-bar>
+      <ion-tab-bar slot="bottom" color="light">
+        <ion-tab-button tab="map" href="/map">
+          <ion-icon :icon="mapIcon" />
+          <ion-label>Carte</ion-label>
+        </ion-tab-button>
+        <ion-tab-button tab="stats" href="/stats">
+          <ion-icon :icon="statsIcon" />
+          <ion-label>Statistiques</ion-label>
+        </ion-tab-button>
+        <ion-tab-button tab="mes-signaux" href="/mes-signaux">
+          <ion-icon :icon="listIcon" />
+          <ion-label>Mes Signal.</ion-label>
+        </ion-tab-button>
+        <ion-tab-button tab="profil" href="/profil">
+          <ion-icon :icon="personIcon" />
+          <ion-label>Profil</ion-label>
+        </ion-tab-button>
+      </ion-tab-bar>
+    </ion-tabs>
   </ion-page>
 </template>
 
 <script setup lang="ts">
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon, IonContent, IonTabBar, IonTabButton, IonLabel, IonRouterOutlet } from '@ionic/vue';
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon, IonTabs, IonTabBar, IonTabButton, IonLabel, IonRouterOutlet } from '@ionic/vue';
 import { logOutOutline, refreshOutline, mapOutline, statsChartOutline, listOutline, personCircleOutline } from 'ionicons/icons';
 import { useAuthStore } from '../stores/auth.store';
 import { useSignalementStore } from '../stores/signalement.store';

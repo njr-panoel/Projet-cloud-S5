@@ -3,12 +3,12 @@
     <div class="stats-top" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">
       <div class="card-rounded" style="flex:1;min-width:260px;padding:12px">
         <div class="small">Répartition par statut</div>
-        <div v-if="store.list.length" style="height:100%"><Pie :chart-data="pieDataRaw" :options="pieOptions" /></div>
+        <div v-if="store.list.length" style="height:100%"><Pie :data="pieDataRaw" :options="pieOptions" /></div>
         <div v-else class="small">Pas encore de données</div>
       </div>
       <div class="card-rounded" style="flex:1;min-width:260px;padding:12px">
         <div class="small">Surface & Budget par statut</div>
-        <div v-if="store.list.length" style="height:100%"><Bar :chart-data="barDataRaw" :options="barOptions" /></div>
+        <div v-if="store.list.length" style="height:100%"><Bar :data="barDataRaw" :options="barOptions" /></div>
         <div v-else class="small">Pas encore de données</div>
       </div>
     </div>

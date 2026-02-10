@@ -82,6 +82,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onLoginCl
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Input
+          id="nom"
           {...register('nom')}
           label="Nom"
           placeholder="Rakoto"
@@ -89,6 +90,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onLoginCl
           leftIcon={<User className="w-5 h-5" />}
         />
         <Input
+          id="prenom"
           {...register('prenom')}
           label="Prénom"
           placeholder="Jean"
@@ -98,6 +100,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onLoginCl
       </div>
 
       <Input
+        id="email"
         {...register('email')}
         type="email"
         label="Adresse email"
@@ -108,6 +111,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onLoginCl
       />
 
       <Input
+        id="telephone"
         {...register('telephone')}
         type="tel"
         label="Téléphone (optionnel)"
@@ -117,6 +121,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onLoginCl
       />
 
       <Input
+        id="password"
         {...register('password')}
         type={showPassword ? 'text' : 'password'}
         label="Mot de passe"
@@ -136,6 +141,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onLoginCl
       />
 
       <Input
+        id="confirmPassword"
         {...register('confirmPassword')}
         type={showConfirmPassword ? 'text' : 'password'}
         label="Confirmer le mot de passe"

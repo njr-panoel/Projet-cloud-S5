@@ -40,6 +40,16 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onRegisterClick
         useFirebase: false,
       };
       await login(loginData);
+      
+      // Vérifier le rôle de l'utilisateur
+      const user = useAuthStore.getState().user;
+      if (user?.role === 'UTILISATEUR_MOBILE') {
+        Toast.error('Accès refusé : Les utilisateurs mobiles ne peuvent pas accéder à cette application');
+        // Déconnecter l'utilisateur
+        useAuthStore.getState().logout();
+        return;
+      }
+      
       Toast.success('Connexion réussie !');
       onSuccess?.();
     } catch (error) {
@@ -52,6 +62,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onRegisterClick
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div>
         <Input
+          id="email"
           {...register('email')}
           type="email"
           label="Adresse email"
@@ -64,6 +75,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onRegisterClick
 
       <div>
         <Input
+          id="password"
           {...register('password')}
           type={showPassword ? 'text' : 'password'}
           label="Mot de passe"
@@ -84,8 +96,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onRegisterClick
       </div>
 
       <div className="flex items-center justify-between">
-        <label className="flex items-center gap-2 cursor-pointer">
+        <label htmlFor="remember-me" className="flex items-center gap-2 cursor-pointer">
           <input
+            id="remember-me"
+            name="remember-me"
             type="checkbox"
             className="w-4 h-4 rounded border-secondary-300 text-primary-600 focus:ring-primary-500"
           />

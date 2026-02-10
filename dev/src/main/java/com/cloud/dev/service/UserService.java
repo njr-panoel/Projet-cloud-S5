@@ -1,12 +1,17 @@
 package com.cloud.dev.service;
 
 import com.cloud.dev.dto.request.CreateManagerRequest;
+import com.cloud.dev.dto.response.LoginAttemptResponse;
 import com.cloud.dev.dto.response.UserResponse;
+import com.cloud.dev.entity.LoginAttempt;
 import com.cloud.dev.entity.User;
 import com.cloud.dev.enums.AuthProvider;
 import com.cloud.dev.enums.Role;
 import com.cloud.dev.exception.ResourceNotFoundException;
 import com.cloud.dev.exception.UserAlreadyExistsException;
+import com.cloud.dev.repository.LoginAttemptRepository;
+import com.cloud.dev.repository.SessionRepository;
+import com.cloud.dev.repository.SignalementRepository;
 import com.cloud.dev.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +28,9 @@ import java.util.stream.Collectors;
 public class UserService {
     
     private final UserRepository userRepository;
+    private final LoginAttemptRepository loginAttemptRepository;
+    private final SessionRepository sessionRepository;
+    private final SignalementRepository signalementRepository;
     private final PasswordEncoder passwordEncoder;
     
     public List<UserResponse> getAllUsers() {
@@ -87,6 +95,11 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur non trouvé"));
         
+        // Supprimer les entités liées avant de supprimer l'utilisateur
+        loginAttemptRepository.deleteByUser(user);
+        sessionRepository.deleteByUser(user);
+        signalementRepository.deleteByUser(user);
+        
         userRepository.delete(user);
         log.info("Utilisateur supprimé: {}", user.getEmail());
     }
@@ -126,6 +139,35 @@ public class UserService {
             userRepository.save(user);
             log.info("Déblocage automatique du compte: {}", user.getEmail());
         }
+    }
+    
+    public List<LoginAttemptResponse> getLoginAttempts(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur non trouvé"));
+        
+        return loginAttemptRepository.findByUserOrderByAttemptedAtDesc(user).stream()
+                .map(this::mapAttemptToResponse)
+                .collect(Collectors.toList());
+    }
+    
+    public List<LoginAttemptResponse> getFailedLoginAttempts(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur non trouvé"));
+        
+        return loginAttemptRepository.findByUserAndSuccessFalseOrderByAttemptedAtDesc(user).stream()
+                .map(this::mapAttemptToResponse)
+                .collect(Collectors.toList());
+    }
+    
+    private LoginAttemptResponse mapAttemptToResponse(LoginAttempt attempt) {
+        return LoginAttemptResponse.builder()
+                .id(attempt.getId())
+                .ipAddress(attempt.getIpAddress())
+                .userAgent(attempt.getUserAgent())
+                .success(attempt.getSuccess())
+                .failureReason(attempt.getFailureReason())
+                .attemptedAt(attempt.getAttemptedAt())
+                .build();
     }
     
     private UserResponse mapToResponse(User user) {
