@@ -2,8 +2,14 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Cloud S5 - Road Report</title>
+    <style>
+      /* Safe areas for notch & bottom bar */
+      ion-header ion-toolbar:first-of-type { padding-top: env(safe-area-inset-top); }
+      ion-tab-bar { padding-bottom: env(safe-area-inset-bottom); }
+      body { -webkit-tap-highlight-color: transparent; }
+    </style>
   </head>
   <body>
     <div id="app"></div>

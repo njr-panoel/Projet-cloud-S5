@@ -151,7 +151,8 @@ const getTypeLabel = (type: string) => {
 
 <style scoped>
 .map-wrapper {
-  position: relative;
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
   width: 100%;
   height: 100%;
   display: block;
@@ -159,15 +160,9 @@ const getTypeLabel = (type: string) => {
 .l-map {
   height: 100%;
   width: 100%;
-  min-height: calc(60vh);
+  min-height: 0;
 }
-.leaflet-container { border-radius: 6px; }
+.leaflet-container { border-radius: 0; }
 .leaflet-popup-content { font-size: 14px; }
 ion-fab { box-shadow: 0 6px 14px rgba(0,0,0,0.16); }
-
-/* Ensure map occupies available area on small devices */
-@media (max-width: 600px) {
-  .l-map { min-height: calc(70vh); }
-  .leaflet-control-zoom { transform: scale(1.0); }
-} 
 </style>

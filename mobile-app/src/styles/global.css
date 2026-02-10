@@ -1,12 +1,20 @@
 /* Global styles + utilities for the app */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Sora:wght@400;500;600&display=swap');
 
 :root {
-  --app-max-width: 1100px;
-  --card-radius: 14px;
-  --card-shadow: 0 12px 30px rgba(2,6,23,0.08);
-  --muted: #6b7280;
-  --page-padding: 16px;
+  --app-max-width: 100%;
+  --card-radius: 16px;
+  --card-shadow: 0 16px 36px rgba(2,6,23,0.10);
+  --muted: #5b6472;
+  --page-padding: 14px;
+  --font-body: 'Sora', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --font-display: 'Space Grotesk', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --bg-1: #f6f7fb;
+  --bg-2: #eef2f7;
+  --surface: #ffffff;
+  --surface-soft: #f9fbff;
+  --ring: rgba(30,58,138,0.15);
+  --accent-glow: rgba(14,165,164,0.15);
 }
 
 html, body, #app {
@@ -16,11 +24,22 @@ html, body, #app {
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(180deg, rgba(14,165,164,0.03) 0%, rgba(30,58,138,0.02) 100%);
+  background:
+    radial-gradient(900px 500px at 90% -10%, var(--accent-glow), transparent 60%),
+    radial-gradient(700px 420px at -10% 20%, rgba(30,58,138,0.10), transparent 55%),
+    linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
   color: #0f172a; /* navy-gray */
+}
+
+ion-title,
+ion-card-title,
+.list-title,
+.stats-value {
+  font-family: var(--font-display);
+  letter-spacing: -0.2px;
 }
 
 .ion-page { display: flex; flex-direction: column; min-height: 100vh; }
@@ -43,17 +62,32 @@ body {
   border-radius: var(--card-radius);
   box-shadow: var(--card-shadow);
   overflow: hidden;
-  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  background: linear-gradient(180deg, var(--surface) 0%, var(--surface-soft) 100%);
+  border: 1px solid rgba(15,23,42,0.05);
 }
 
 /* Buttons */
-.ion-button.ion-color-primary { --background: var(--ion-color-primary); --color: white; border-radius: 10px; font-weight: 600; }
+.ion-button.ion-color-primary { --background: var(--ion-color-primary); --color: white; border-radius: 12px; font-weight: 600; }
+ion-button { text-transform: none; letter-spacing: 0.2px; }
 
 /* Form inputs spacing */
-ion-item { --padding-start: 12px; --inner-padding-end: 12px; margin-top: 8px; }
+ion-item { --padding-start: 12px; --inner-padding-end: 12px; margin-top: 8px; --background: transparent; }
+ion-input, ion-textarea, ion-select {
+  --placeholder-color: #94a3b8;
+}
 
 /* Map container baseline */
-.map-full { width: 100%; height: calc(100vh - 56px); position: relative; border-radius: 10px; overflow: hidden; box-shadow: 0 6px 20px rgba(2,6,23,0.06); }
+.map-full { width: 100%; height: calc(100vh - 56px); position: relative; border-radius: 14px; overflow: hidden; box-shadow: 0 12px 28px rgba(2,6,23,0.10); }
+
+/* Map mobile-friendly: fills remaining space inside ion-content */
+.map-mobile {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  overflow: hidden;
+  border-radius: 0;
+}
 
 /* Floating action button tweaks */
 ion-fab { right: 16px; bottom: 20px; z-index: 1200; }
@@ -63,15 +97,15 @@ ion-fab { right: 16px; bottom: 20px; z-index: 1200; }
 .login-card { width: 100%; max-width: 460px; }
 
 /* List items */
-.list-card { display: flex; gap: 12px; align-items: center; padding: 12px; }
+.list-card { display: flex; gap: 12px; align-items: center; padding: 12px; border: 1px solid rgba(15,23,42,0.05); border-radius: 12px; background: #fff; }
 .list-thumbnail { width: 64px; height: 64px; border-radius: 8px; object-fit: cover; }
 .list-title { font-weight: 600; color: #0f172a; }
 .list-meta { font-size: 13px; color: var(--muted); }
 
 /* Stats */
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-.stats-card { padding: 12px; border-radius: 10px; background: linear-gradient(180deg, rgba(14,165,164,0.04), rgba(30,58,138,0.02)); }
-.stats-value { font-size: 20px; font-weight: 700; color: var(--ion-color-primary); }
+.stats-card { padding: 14px; border-radius: 14px; background: linear-gradient(180deg, rgba(14,165,164,0.05), rgba(30,58,138,0.03)); border: 1px solid rgba(14,165,164,0.10); }
+.stats-value { font-size: 22px; font-weight: 700; color: var(--ion-color-primary); }
 
 /* Avatar */
 .avatar { width: 96px; height: 96px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(90deg, rgba(30,58,138,0.9), rgba(14,165,164,0.9)); color: white; font-weight: 700; font-size: 26px; }
@@ -85,6 +119,29 @@ ion-fab { right: 16px; bottom: 20px; z-index: 1200; }
 /* Leaflet popup */
 .leaflet-popup-content-wrapper { border-radius: 8px !important; }
 
+/* Motion */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card-rounded,
+.list-card,
+.stats-card {
+  animation: fadeUp 220ms ease-out;
+}
+
 @media (min-width: 800px) {
   .ion-content.ion-padding { padding-left: 24px; padding-right: 24px; }
+}
+
+@media (max-width: 430px) {
+  :root { --page-padding: 8px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .stats-value { font-size: 18px; }
+  .stats-card { padding: 10px; }
+  .page-container { padding: 8px; }
+  .list-card { padding: 8px; gap: 8px; }
+  .list-thumbnail { width: 48px; height: 48px; }
+  .avatar { width: 64px; height: 64px; font-size: 20px; }
 }
