@@ -11,7 +11,6 @@ import {
 } from 'firebase/firestore';
 import { Preferences } from '@capacitor/preferences';
 import { QueuedSignalement, Signalement, SignalementInput } from '../models/signalement.model';
-import { storageService } from './storage.service';
 
 const COLLECTION = 'signalements';
 const QUEUE_KEY = 'offline_queue_signalements';
@@ -26,6 +25,7 @@ function mapDoc(d: any): Signalement {
     description: data.description,
       type: data.type || 'autre',
     photoUrl: data.photoUrl ?? null,
+    photoBase64: data.photoBase64 ?? null,
     statut: data.statut,
     surface_m2: data.surface_m2 ?? null,
     budget: data.budget ?? null,
@@ -68,20 +68,6 @@ export const signalementService = {
     console.log('📝 description:', input.description);
     console.log('🏷️ type:', input.type);
     
-    let photoUrl: string | null = null;
-    
-    // Upload photo si présente (optionnel, ne bloque pas)
-    if (input.photo) {
-      try {
-        console.log('📸 Upload photo...');
-        photoUrl = await storageService.uploadSignalementPhoto(userId, input.photo);
-        console.log('✅ Photo uploadée:', photoUrl);
-      } catch (error) {
-        console.warn('⚠️ Erreur upload photo, continue sans photo:', error);
-        // Continue même si l'upload photo échoue
-      }
-    }
-    
     console.log('💾 Création document Firestore...');
     try {
       const now = Date.now();
@@ -91,7 +77,8 @@ export const signalementService = {
         longitude: input.longitude,
         type: input.type,
         description: input.description,
-        photoUrl,
+        photoBase64: input.photoBase64 ?? null,
+        photoUrl: null,
         statut: 'nouveau',
         surface_m2: null,
         budget: null,

@@ -2,7 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Sora:wght@400;500;600&display=swap');
 
 :root {
-  --app-max-width: 1100px;
+  --app-max-width: 100%;
   --card-radius: 16px;
   --card-shadow: 0 16px 36px rgba(2,6,23,0.10);
   --muted: #5b6472;
@@ -79,6 +79,16 @@ ion-input, ion-textarea, ion-select {
 /* Map container baseline */
 .map-full { width: 100%; height: calc(100vh - 56px); position: relative; border-radius: 14px; overflow: hidden; box-shadow: 0 12px 28px rgba(2,6,23,0.10); }
 
+/* Map mobile-friendly: fills remaining space inside ion-content */
+.map-mobile {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  overflow: hidden;
+  border-radius: 0;
+}
+
 /* Floating action button tweaks */
 ion-fab { right: 16px; bottom: 20px; z-index: 1200; }
 
@@ -126,7 +136,12 @@ ion-fab { right: 16px; bottom: 20px; z-index: 1200; }
 }
 
 @media (max-width: 430px) {
-  :root { --page-padding: 12px; }
-  .stats-grid { gap: 10px; }
-  .stats-value { font-size: 20px; }
+  :root { --page-padding: 8px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .stats-value { font-size: 18px; }
+  .stats-card { padding: 10px; }
+  .page-container { padding: 8px; }
+  .list-card { padding: 8px; gap: 8px; }
+  .list-thumbnail { width: 48px; height: 48px; }
+  .avatar { width: 64px; height: 64px; font-size: 20px; }
 }

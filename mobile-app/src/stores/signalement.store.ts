@@ -39,7 +39,7 @@ export const useSignalementStore = defineStore('signalements', {
       this.list = await signalementService.listAll();
       this.computeStats();
     },
-    async addSignalement(input: SignalementInput & { photo: any }) {
+    async addSignalement(input: SignalementInput) {
       const auth = useAuthStore();
       const net = useNetworkStore();
       if (!auth.user) {

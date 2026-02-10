@@ -25,6 +25,7 @@ export interface Signalement {
   description: string;
   type: TypeProbleme;
   photoUrl: string | null;
+  photoBase64: string | null;
   statut: Statut;
   surface_m2: number | null;
   budget: number | null;
@@ -38,7 +39,7 @@ export interface SignalementInput {
   longitude: number;
   description: string;
   type: TypeProbleme;
-  photo: any;
+  photoBase64?: string;
 }
 
 export interface QueuedSignalement extends SignalementInput {

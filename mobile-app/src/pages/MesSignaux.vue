@@ -5,7 +5,8 @@
         <h2 class="small">Mes signalements</h2>
         <div>
           <div v-for="item in mine" :key="item.id" class="card-rounded list-card" style="margin-bottom:12px">
-            <img v-if="item.photoUrl" :src="item.photoUrl" alt="photo" class="list-thumbnail" />
+            <img v-if="item.photoBase64" :src="'data:image/jpeg;base64,' + item.photoBase64" alt="photo" class="list-thumbnail" />
+            <img v-else-if="item.photoUrl" :src="item.photoUrl" alt="photo" class="list-thumbnail" />
             <div style="flex:1;min-width:0">
               <div class="list-title" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ item.description }}</div>
               <div class="list-meta">Statut: {{ item.statut }} • {{ new Date(item.createdAt).toLocaleString() }}</div>

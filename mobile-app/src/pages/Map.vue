@@ -1,20 +1,20 @@
 <template>
   <ion-page>
-    <ion-content>
-      <div class="page-container">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <ion-segment v-model="segment" style="--background:transparent">
+    <ion-content :fullscreen="true" class="map-content">
+      <div class="map-page-container">
+        <div class="map-toolbar">
+          <ion-segment v-model="segment" style="--background:transparent;flex:1">
             <ion-segment-button value="all">Tous</ion-segment-button>
-            <ion-segment-button value="mine">Mes signalements</ion-segment-button>
+            <ion-segment-button value="mine">Les miens</ion-segment-button>
           </ion-segment>
-          <div style="display:flex;gap:4px">
-            <ion-button fill="clear" @click="openForm()" title="Nouveau signalement">
+          <div style="display:flex;gap:0">
+            <ion-button fill="clear" size="small" @click="openForm()" title="Nouveau signalement">
               <ion-icon :icon="addIcon"/>
             </ion-button>
-            <ion-button fill="clear" @click="refresh"><ion-icon :icon="refreshIcon"/></ion-button>
+            <ion-button fill="clear" size="small" @click="refresh"><ion-icon :icon="refreshIcon"/></ion-button>
           </div>
         </div>
-        <div class="card-rounded map-full">
+        <div class="map-mobile">
           <MapView
             :signalements="filtered"
             :loading="signalements.loading"
@@ -94,3 +94,34 @@ onMounted(async () => {
   await signalements.init();
 });
 </script>
+
+<style scoped>
+.map-content {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+.map-page-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+.map-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  flex-shrink: 0;
+  background: var(--ion-background-color, #f6f7fb);
+}
+.map-mobile {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+}
+</style>
