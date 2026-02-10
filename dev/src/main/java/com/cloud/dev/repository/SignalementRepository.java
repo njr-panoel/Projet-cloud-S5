@@ -26,4 +26,6 @@ public interface SignalementRepository extends JpaRepository<Signalement, Long> 
     List<Signalement> findByStatutAndTypeTravaux(StatutSignalement statut, TypeTravaux typeTravaux);
     
     Long countByStatut(StatutSignalement statut);
+    
+    void deleteByUser(User user);
 }

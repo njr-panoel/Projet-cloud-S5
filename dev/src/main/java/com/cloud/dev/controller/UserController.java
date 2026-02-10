@@ -2,6 +2,7 @@ package com.cloud.dev.controller;
 
 import com.cloud.dev.dto.request.CreateManagerRequest;
 import com.cloud.dev.dto.response.ApiResponse;
+import com.cloud.dev.dto.response.LoginAttemptResponse;
 import com.cloud.dev.dto.response.UserResponse;
 import com.cloud.dev.enums.Role;
 import com.cloud.dev.service.UserService;
@@ -91,5 +92,21 @@ public class UserController {
         UserResponse user = userService.createManager(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Manager créé avec succès", user));
+    }
+    
+    @Operation(summary = "Obtenir les tentatives de connexion d'un utilisateur (Manager uniquement)")
+    @GetMapping("/{id}/login-attempts")
+    @PreAuthorize("hasRole('MANAGER')")
+    public ResponseEntity<ApiResponse<List<LoginAttemptResponse>>> getLoginAttempts(@PathVariable Long id) {
+        List<LoginAttemptResponse> attempts = userService.getLoginAttempts(id);
+        return ResponseEntity.ok(ApiResponse.success(attempts));
+    }
+    
+    @Operation(summary = "Obtenir les tentatives échouées d'un utilisateur (Manager uniquement)")
+    @GetMapping("/{id}/failed-attempts")
+    @PreAuthorize("hasRole('MANAGER')")
+    public ResponseEntity<ApiResponse<List<LoginAttemptResponse>>> getFailedLoginAttempts(@PathVariable Long id) {
+        List<LoginAttemptResponse> attempts = userService.getFailedLoginAttempts(id);
+        return ResponseEntity.ok(ApiResponse.success(attempts));
     }
 }

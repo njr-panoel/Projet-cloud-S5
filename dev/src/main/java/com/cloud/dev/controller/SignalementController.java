@@ -1,5 +1,6 @@
 package com.cloud.dev.controller;
 
+import com.cloud.dev.dto.StatistiquesResponse;
 import com.cloud.dev.dto.request.SignalementRequest;
 import com.cloud.dev.dto.response.ApiResponse;
 import com.cloud.dev.dto.response.SignalementResponse;
@@ -115,5 +116,14 @@ public class SignalementController {
     public ResponseEntity<ApiResponse<Void>> markAsSynced(@PathVariable Long id) {
         signalementService.markAsSynced(id);
         return ResponseEntity.ok(ApiResponse.success("Signalement marqué comme synchronisé", null));
+    }
+    
+    @Operation(summary = "Obtenir les statistiques des signalements (Manager uniquement)")
+    @GetMapping("/statistiques")
+    @SecurityRequirement(name = "Bearer Authentication")
+    @PreAuthorize("hasRole('MANAGER')")
+    public ResponseEntity<ApiResponse<StatistiquesResponse>> getStatistiques() {
+        StatistiquesResponse statistiques = signalementService.getStatistiques();
+        return ResponseEntity.ok(ApiResponse.success(statistiques));
     }
 }

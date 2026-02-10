@@ -80,6 +80,17 @@ export const signalementService = {
     }
   },
 
+  // Récupérer les statistiques (Manager uniquement)
+  async getStatistiques(): Promise<StatistiquesResponse> {
+    const response = await api.get<ApiResponse<StatistiquesResponse>>(
+      config.endpoints.signalements.base + '/statistiques'
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Erreur lors de la récupération des statistiques');
+    }
+    return response.data.data;
+  },
+
   // Calculer les statistiques à partir de la liste
   calculateStats(signalements: Signalement[]): GlobalStats {
     const total = signalements.length;
@@ -120,3 +131,21 @@ export const signalementService = {
     });
   },
 };
+
+// Interface pour les statistiques du backend
+export interface StatistiquesResponse {
+  totalSignalements: number;
+  nouveaux: number;
+  enCours: number;
+  termines: number;
+  annules: number;
+  delaiMoyenTraitement: number | null;
+  delaiMoyenPriseEnCharge: number | null;
+  delaiMinTraitement: number | null;
+  delaiMaxTraitement: number | null;
+  parTypeTravaux: Record<string, number>;
+  avancementMoyen: number;
+  budgetTotal: number;
+  budgetTermine: number;
+  budgetEnCours: number;
+}

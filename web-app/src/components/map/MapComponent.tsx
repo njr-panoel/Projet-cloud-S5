@@ -1,54 +1,77 @@
-import React from 'react';
+import * as React from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMapEvents } from 'react-leaflet';
-import L from 'leaflet';
+import * as L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { config } from '../../config';
 import type { Signalement } from '../../types';
 import { MapTooltip } from './MapTooltip';
 
-// Fix for default markers
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-
-delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIcon2x,
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
-});
-
-// Custom marker icons by status (keep fallback to color markers)
-const createIcon = (color: string) =>
-  new L.Icon({
-    iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
-    shadowUrl: markerShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41],
+// Créer un marqueur GPS réaliste style Google Maps avec couleur personnalisée
+const createGpsMarkerIcon = (color: string, innerColor: string = '#ffffff') => {
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="32" height="48">
+      <defs>
+        <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.3"/>
+        </filter>
+        <linearGradient id="grad-${color.replace('#', '')}" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:${color};stop-opacity:1" />
+          <stop offset="100%" style="stop-color:${adjustColor(color, -30)};stop-opacity:1" />
+        </linearGradient>
+      </defs>
+      <!-- Pin shape -->
+      <path d="M12 0C5.4 0 0 5.4 0 12c0 7.2 12 24 12 24s12-16.8 12-24C24 5.4 18.6 0 12 0z" 
+            fill="url(#grad-${color.replace('#', '')})" 
+            filter="url(#shadow)"
+            stroke="${adjustColor(color, -40)}" 
+            stroke-width="0.5"/>
+      <!-- Inner circle -->
+      <circle cx="12" cy="11" r="5" fill="${innerColor}" opacity="0.95"/>
+      <!-- Highlight -->
+      <ellipse cx="8" cy="7" rx="3" ry="2" fill="white" opacity="0.3"/>
+    </svg>
+  `;
+  
+  return new L.DivIcon({
+    html: svg,
+    className: 'custom-gps-marker',
+    iconSize: [32, 48],
+    iconAnchor: [16, 48],
+    popupAnchor: [0, -48],
   });
-
-const statusIcons: Record<string, L.Icon> = {
-  NOUVEAU: createIcon('orange'),
-  EN_COURS: createIcon('blue'),
-  TERMINE: createIcon('green'),
-  ANNULE: createIcon('red'),
 };
 
-// Icons by type (SVG in public/assets/icons)
-const typeIcons: Record<string, L.Icon> = {
-  NIDS_DE_POULE: new L.Icon({ iconUrl: '/assets/icons/pothole.svg', iconSize: [36, 36], iconAnchor: [18, 36], popupAnchor: [0, -30] }),
-  FISSURE: new L.Icon({ iconUrl: '/assets/icons/crack.svg', iconSize: [36, 36], iconAnchor: [18, 36], popupAnchor: [0, -30] }),
-  EAU: new L.Icon({ iconUrl: '/assets/icons/water.svg', iconSize: [36, 36], iconAnchor: [18, 36], popupAnchor: [0, -30] }),
-  TERMINE: new L.Icon({ iconUrl: '/assets/icons/check.svg', iconSize: [36, 36], iconAnchor: [18, 36], popupAnchor: [0, -30] }),
-  DEFAULT: new L.Icon({ iconUrl: '/assets/icons/default.svg', iconSize: [34, 34], iconAnchor: [17, 34], popupAnchor: [0, -26] }),
+// Fonction pour ajuster la luminosité d'une couleur
+function adjustColor(color: string, amount: number): string {
+  const hex = color.replace('#', '');
+  const r = Math.max(0, Math.min(255, parseInt(hex.substr(0, 2), 16) + amount));
+  const g = Math.max(0, Math.min(255, parseInt(hex.substr(2, 2), 16) + amount));
+  const b = Math.max(0, Math.min(255, parseInt(hex.substr(4, 2), 16) + amount));
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
+
+// Couleurs des statuts
+const STATUS_COLORS: Record<string, { main: string; inner: string }> = {
+  NOUVEAU: { main: '#f59e0b', inner: '#ffffff' },      // Orange - Nouveau
+  EN_COURS: { main: '#3b82f6', inner: '#ffffff' },     // Bleu - En cours
+  TERMINE: { main: '#22c55e', inner: '#ffffff' },      // Vert - Terminé
+  ANNULE: { main: '#ef4444', inner: '#ffffff' },       // Rouge - Annulé
 };
+
+// Créer les icônes par statut
+const getStatusIcon = (statut: string): L.DivIcon => {
+  const colors = STATUS_COLORS[statut] || STATUS_COLORS.NOUVEAU;
+  return createGpsMarkerIcon(colors.main, colors.inner);
+};
+
+// Marqueur pour position sélectionnée (rouge vif)
+const selectedPositionIcon = createGpsMarkerIcon('#dc2626', '#ffffff');
 
 interface MapComponentProps {
   signalements?: Signalement[];
   onMapClick?: (lat: number, lng: number) => void;
   onMarkerClick?: (signalement: Signalement) => void;
+  onShowPhotos?: (signalement: Signalement) => void;
   selectedPosition?: { lat: number; lng: number } | null;
   height?: string;
   interactive?: boolean;
@@ -67,6 +90,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
   signalements = [],
   onMapClick,
   onMarkerClick,
+  onShowPhotos,
   selectedPosition,
   height = '100%',
   interactive = true,
@@ -89,14 +113,141 @@ export const MapComponent: React.FC<MapComponentProps> = ({
 
         {/* Signalements markers */}
         {signalements.map((signalement) => {
-          const iconByType = typeIcons[signalement.typeTravaux] || typeIcons.DEFAULT;
+          // Utiliser l'icône basée sur le statut (marqueur GPS réaliste)
+          const markerIcon = getStatusIcon(signalement.statut);
+          
+          // Labels et couleurs pour le statut
+          const statutLabel: Record<string, string> = {
+            'NOUVEAU': 'Nouveau',
+            'EN_COURS': 'En cours',
+            'TERMINE': 'Terminé',
+            'ANNULE': 'Annulé',
+          };
+          const statutColor: Record<string, string> = {
+            'NOUVEAU': '#f59e0b',
+            'EN_COURS': '#3b82f6',
+            'TERMINE': '#22c55e',
+            'ANNULE': '#ef4444',
+          };
+          
+          // Formater le budget
+          const formatBudget = (budget: number): string => {
+            if (budget >= 1000000) return `${(budget / 1000000).toFixed(1)} M Ar`;
+            if (budget >= 1000) return `${(budget / 1000).toFixed(0)} K Ar`;
+            return `${budget.toLocaleString()} Ar`;
+          };
+
+          // Labels pour les types de travaux
+          const typeLabel: Record<string, string> = {
+            'NIDS_DE_POULE': 'Nids de poule',
+            'FISSURE': 'Fissure',
+            'AFFAISSEMENT': 'Affaissement',
+            'INONDATION': 'Inondation',
+            'SIGNALISATION': 'Signalisation',
+            'ECLAIRAGE': 'Éclairage',
+            'AUTRE': 'Autre',
+          };
+
+          // Couleurs pour les types de travaux
+          const typeColor: Record<string, string> = {
+            'NIDS_DE_POULE': '#ef4444',
+            'FISSURE': '#f97316',
+            'AFFAISSEMENT': '#eab308',
+            'INONDATION': '#3b82f6',
+            'SIGNALISATION': '#8b5cf6',
+            'ECLAIRAGE': '#06b6d4',
+            'AUTRE': '#6b7280',
+          };
+
+          // Contenu du tooltip au survol
           const hoverContent = (
-            <div style={{ minWidth: 200 }}>
-              <strong>{signalement.titre}</strong>
-              <div style={{ fontSize: 12, color: '#4b5563' }}>
-                {new Date(signalement.createdAt).toLocaleDateString()} — {signalement.statut}
+            <div style={{ minWidth: 300, maxWidth: 340, padding: 6 }}>
+              {/* Titre */}
+              <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 8, color: '#1f2937' }}>
+                {signalement.titre}
+              </div>
+              
+              {/* Date et Statut */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <span style={{ fontSize: 12, color: '#6b7280' }}>
+                  📅 {new Date(signalement.createdAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                </span>
+                <span style={{ 
+                  fontSize: 11, 
+                  fontWeight: 600, 
+                  padding: '2px 8px', 
+                  borderRadius: 9999, 
+                  backgroundColor: `${statutColor[signalement.statut]}20`,
+                  color: statutColor[signalement.statut]
+                }}>
+                  {statutLabel[signalement.statut]}
+                </span>
+              </div>
+
+              {/* Type de travaux (Niveau) */}
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 6, 
+                marginBottom: 10,
+                padding: '6px 10px',
+                backgroundColor: `${typeColor[signalement.typeTravaux] || '#6b7280'}15`,
+                borderRadius: 6,
+                border: `1px solid ${typeColor[signalement.typeTravaux] || '#6b7280'}30`
+              }}>
+                <span style={{ fontSize: 14 }}>🔧</span>
                 <div>
-                  Surface: {signalement.surfaceM2 ?? '—'} m² — Budget: {signalement.budget ?? '—'}
+                  <div style={{ fontSize: 10, color: '#9ca3af' }}>Type / Niveau</div>
+                  <div style={{ fontWeight: 600, fontSize: 13, color: typeColor[signalement.typeTravaux] || '#6b7280' }}>
+                    {typeLabel[signalement.typeTravaux] || signalement.typeTravaux}
+                  </div>
+                </div>
+              </div>
+
+              {/* Infos détaillées */}
+              <div style={{ fontSize: 12, color: '#4b5563', borderTop: '1px solid #e5e7eb', paddingTop: 8 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                  {/* Surface */}
+                  <div style={{ backgroundColor: '#f3f4f6', padding: '6px 8px', borderRadius: 6 }}>
+                    <div style={{ fontSize: 10, color: '#9ca3af' }}>📐 Surface</div>
+                    <div style={{ fontWeight: 600, color: '#374151' }}>
+                      {signalement.surfaceM2 ? `${signalement.surfaceM2.toLocaleString()} m²` : '—'}
+                    </div>
+                  </div>
+                  
+                  {/* Budget */}
+                  <div style={{ backgroundColor: '#f3f4f6', padding: '6px 8px', borderRadius: 6 }}>
+                    <div style={{ fontSize: 10, color: '#9ca3af' }}>💰 Budget</div>
+                    <div style={{ fontWeight: 600, color: '#374151' }}>
+                      {signalement.budget ? formatBudget(signalement.budget) : '—'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Entreprise */}
+                <div style={{ marginTop: 6, backgroundColor: '#f3f4f6', padding: '6px 8px', borderRadius: 6 }}>
+                  <div style={{ fontSize: 10, color: '#9ca3af' }}>🏢 Entreprise concernée</div>
+                  <div style={{ fontWeight: 600, color: '#374151' }}>
+                    {signalement.entreprise || '— Non assignée'}
+                  </div>
+                </div>
+
+                {/* Lien Photos */}
+                <div style={{ marginTop: 10, textAlign: 'center', padding: '8px', backgroundColor: '#eef2ff', borderRadius: 6 }}>
+                  {signalement.photos ? (
+                    <span style={{ 
+                      fontSize: 12, 
+                      color: '#4f46e5', 
+                      fontWeight: 600,
+                      cursor: 'pointer'
+                    }}>
+                      📷 Cliquez pour voir les photos
+                    </span>
+                  ) : (
+                    <span style={{ fontSize: 11, color: '#9ca3af' }}>
+                      Aucune photo disponible
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -106,7 +257,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
             <Marker
               key={signalement.id}
               position={[signalement.latitude, signalement.longitude]}
-              icon={iconByType}
+              icon={markerIcon}
               eventHandlers={{
                 click: () => onMarkerClick?.(signalement),
               }}
@@ -115,7 +266,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
                 {hoverContent}
               </Tooltip>
               <Popup>
-                <MapTooltip signalement={signalement} />
+                <MapTooltip signalement={signalement} onShowPhotos={onShowPhotos} />
               </Popup>
             </Marker>
           );
@@ -123,7 +274,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
 
         {/* Selected position marker */}
         {selectedPosition && (
-          <Marker position={[selectedPosition.lat, selectedPosition.lng]}>
+          <Marker position={[selectedPosition.lat, selectedPosition.lng]} icon={selectedPositionIcon}>
             <Popup>
               <div className="text-sm">
                 <p className="font-medium">Position sélectionnée</p>

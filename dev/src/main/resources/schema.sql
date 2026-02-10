@@ -49,7 +49,11 @@ CREATE TABLE IF NOT EXISTS signalements (
     firebase_id VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    completed_at TIMESTAMP
+    completed_at TIMESTAMP,
+    -- Colonnes pour le suivi d'avancement
+    date_nouveau TIMESTAMP,
+    date_en_cours TIMESTAMP,
+    date_termine TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_signalements_statut ON signalements(statut);
@@ -130,7 +134,7 @@ SELECT
     'Route Nationale 5, Antananarivo',
     id,
     false
-FROM users WHERE email = 'mobile@test.com' LIMIT 1
+FROM users WHERE email = 'didier@gmail.com ' LIMIT 1
 ON CONFLICT DO NOTHING;
 
 -- =====================================================

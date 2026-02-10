@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, Clock, CheckCircle, MapPin, AlertTriangle, Ruler, Banknote } from 'lucide-react';
+import { TrendingUp, Clock, CheckCircle, MapPin, AlertTriangle, Ruler, Banknote, BarChart3 } from 'lucide-react';
 import { Card } from '../ui';
 import type { GlobalStats } from '../../types';
 
@@ -83,28 +83,10 @@ export const StatsGlobal: React.FC<StatsGlobalProps> = ({ stats, isLoading }) =>
 
   const statCards = [
     {
-      title: 'Total Signalements',
+      title: 'Total Points',
       value: stats.totalSignalements,
       icon: <MapPin className="w-6 h-6 text-white" />,
       color: 'bg-primary-500',
-    },
-    {
-      title: 'Nouveaux',
-      value: stats.nouveau,
-      icon: <AlertTriangle className="w-6 h-6 text-white" />,
-      color: 'bg-warning-500',
-    },
-    {
-      title: 'En Cours',
-      value: stats.enCours,
-      icon: <Clock className="w-6 h-6 text-white" />,
-      color: 'bg-primary-400',
-    },
-    {
-      title: 'Terminés',
-      value: stats.termines,
-      icon: <CheckCircle className="w-6 h-6 text-white" />,
-      color: 'bg-success-500',
     },
     {
       title: 'Surface Totale',
@@ -113,10 +95,29 @@ export const StatsGlobal: React.FC<StatsGlobalProps> = ({ stats, isLoading }) =>
       color: 'bg-secondary-600',
     },
     {
+      title: 'Avancement',
+      value: `${stats.pourcentageTermine.toFixed(1)}%`,
+      icon: <BarChart3 className="w-6 h-6 text-white" />,
+      color: 'bg-primary-600',
+      trend: `${stats.termines} terminés sur ${stats.totalSignalements}`,
+    },
+    {
       title: 'Budget Total',
       value: formatBudget(stats.totalBudget),
       icon: <Banknote className="w-6 h-6 text-white" />,
       color: 'bg-success-600',
+    },
+    {
+      title: 'En Cours',
+      value: stats.enCours,
+      icon: <Clock className="w-6 h-6 text-white" />,
+      color: 'bg-warning-500',
+    },
+    {
+      title: 'Nouveaux',
+      value: stats.nouveau,
+      icon: <AlertTriangle className="w-6 h-6 text-white" />,
+      color: 'bg-danger-500',
     },
   ];
 

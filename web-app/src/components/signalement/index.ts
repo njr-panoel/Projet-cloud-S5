@@ -1,0 +1,1 @@
+export { DetailSignalement } from './DetailSignalement';

@@ -3,10 +3,11 @@ import { MainLayout } from '../layouts/MainLayout';
 import { ProtectedRoute } from '../components/auth';
 import { LoginPage } from '../pages/auth/LoginPage';
 import { VisiteurPage } from '../pages/visiteur/VisiteurPage';
-import { SignalementPage } from '../pages/utilisateur/SignalementPage';
 import { DashboardPage } from '../pages/manager/DashboardPage';
 import { UsersBlockedPage } from '../pages/manager/UsersBlockedPage';
+import { UsersPage } from '../pages/manager/UsersPage';
 import { ManagersPage } from '../pages/manager/ManagersPage';
+import { StatistiquesPage } from '../pages/manager/StatistiquesPage';
 
 // Page 403 - Unauthorized
 const UnauthorizedPage = () => (
@@ -58,14 +59,6 @@ export const router = createBrowserRouter([
         element: <VisiteurPage />,
       },
       {
-        path: 'signalement',
-        element: (
-          <ProtectedRoute allowedRoles={['UTILISATEUR_MOBILE', 'MANAGER']}>
-            <SignalementPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
         path: 'dashboard',
         element: (
           <ProtectedRoute allowedRoles={['MANAGER']}>
@@ -82,10 +75,42 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: 'users',
+        element: (
+          <ProtectedRoute allowedRoles={['MANAGER']}>
+            <UsersPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: 'managers',
         element: (
           <ProtectedRoute allowedRoles={['MANAGER']}>
             <ManagersPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'statistiques',
+        element: (
+          <ProtectedRoute allowedRoles={['MANAGER']}>
+            <StatistiquesPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'manager/dashboard',
+        element: (
+          <ProtectedRoute allowedRoles={['MANAGER']}>
+            <DashboardPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'manager/statistiques',
+        element: (
+          <ProtectedRoute allowedRoles={['MANAGER']}>
+            <StatistiquesPage />
           </ProtectedRoute>
         ),
       },

@@ -1,7 +1,39 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import type { AuthState, LoginRequest, RegisterRequest } from '../types';
 import { authService } from '../services/authService';
+
+// Safe storage handler that checks if localStorage is available
+const safeStorage = {
+  getItem: (name: string) => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        return window.localStorage.getItem(name);
+      }
+    } catch (e) {
+      // localStorage is not available (e.g., private browsing, iframe)
+    }
+    return null;
+  },
+  setItem: (name: string, value: string) => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem(name, value);
+      }
+    } catch (e) {
+      // localStorage is not available, silently fail
+    }
+  },
+  removeItem: (name: string) => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.removeItem(name);
+      }
+    } catch (e) {
+      // localStorage is not available, silently fail
+    }
+  }
+};
 
 interface AuthStore extends AuthState {
   login: (data: LoginRequest) => Promise<void>;
@@ -103,6 +135,7 @@ export const useAuthStore = create<AuthStore>()(
     {
       name: 'auth-storage',
       partialize: (state) => ({ token: state.token, user: state.user }),
+      storage: createJSONStorage(() => safeStorage),
     }
   )
 );
